@@ -41,7 +41,7 @@ struct HandleWindowApp: App {
 
     var body: some Scene {
         WindowGroup(id: "main") {
-            ContentView()
+            ContentWindowWrapper()
         }
     }
 }
