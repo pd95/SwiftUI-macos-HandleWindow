@@ -11,6 +11,7 @@
 		17341736285E1C6C008E0D72 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17341735285E1C6C008E0D72 /* ContentView.swift */; };
 		17341738285E1C6C008E0D72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17341737285E1C6C008E0D72 /* Assets.xcassets */; };
 		1734173B285E1C6C008E0D72 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1734173A285E1C6C008E0D72 /* Preview Assets.xcassets */; };
+		17341743285E1C94008E0D72 /* WindowAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17341742285E1C94008E0D72 /* WindowAccessor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +21,7 @@
 		17341737285E1C6C008E0D72 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1734173A285E1C6C008E0D72 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		1734173C285E1C6C008E0D72 /* HandleWindow.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HandleWindow.entitlements; sourceTree = "<group>"; };
+		17341742285E1C94008E0D72 /* WindowAccessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowAccessor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +56,7 @@
 			children = (
 				17341733285E1C6C008E0D72 /* HandleWindowApp.swift */,
 				17341735285E1C6C008E0D72 /* ContentView.swift */,
+				17341742285E1C94008E0D72 /* WindowAccessor.swift */,
 				17341737285E1C6C008E0D72 /* Assets.xcassets */,
 				1734173C285E1C6C008E0D72 /* HandleWindow.entitlements */,
 				17341739285E1C6C008E0D72 /* Preview Content */,
@@ -139,6 +142,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				17341743285E1C94008E0D72 /* WindowAccessor.swift in Sources */,
 				17341736285E1C6C008E0D72 /* ContentView.swift in Sources */,
 				17341734285E1C6C008E0D72 /* HandleWindowApp.swift in Sources */,
 			);
@@ -279,6 +283,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.HandleWindow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -306,6 +311,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.HandleWindow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
