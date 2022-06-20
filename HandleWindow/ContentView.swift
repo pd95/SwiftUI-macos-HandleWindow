@@ -14,6 +14,7 @@ let HEIGHT: CGFloat = 200
 struct ContentWindowWrapper: View {
     var body: some View {
         ContentView()
+            //.handleWindowEvents()
             .handleWindowEvents(onAppear: { window, isVisible in
                 print("isVisible", isVisible, window.frame, window.frameAutosaveName, window.identifier?.rawValue ?? "-")
                 if isVisible {
@@ -21,6 +22,8 @@ struct ContentWindowWrapper: View {
 
                     // Make sure this window stores its position under the same preference
                     window.setFrameAutosaveName("main-AppWindow-1")
+
+                    placeWindow(window)
                 }
             })
     }
@@ -40,20 +43,22 @@ struct ContentWindowWrapper: View {
 }
 
 struct ContentView: View {
-    @Environment(\.currentWindow) var currentWindow
+    @Environment(\.window) var window
 
     var body: some View {
-        VStack {
+        print(Self.self, #function, window)
+        return VStack {
             Text("it finally works!")
                 .font(.largeTitle)
 
-            Text(currentWindow?.frameAutosaveName ?? "-")
-            Text("\(String(describing: currentWindow))")
+            Text(window?.underlyingWindow?.frameAutosaveName ?? "-")
+            Text("\(String(describing: window))")
 
             Button("Dump") {
-                dump(self)
+                dump(window)
             }
         }
+        .padding()
         .frame(width: WIDTH, height: HEIGHT, alignment: .center)
     }
 }
