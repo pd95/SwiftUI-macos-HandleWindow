@@ -12,6 +12,10 @@ let WIDTH: CGFloat = 400
 let HEIGHT: CGFloat = 200
 
 struct ContentWindowWrapper: View {
+
+    @AppStorage("overwriteAutosaveName") private var overwriteAutosaveName = true
+    @AppStorage("centered") private var centered = true
+
     var body: some View {
         ContentView()
             //.trackUnderlyingWindow()
@@ -21,9 +25,15 @@ struct ContentWindowWrapper: View {
                     print(window.frameAutosaveName, window.frame)
 
                     // Make sure this window stores its position under the same preference
-                    window.setFrameAutosaveName("main-AppWindow-1")
+                    if overwriteAutosaveName {
+                        window.setFrameAutosaveName("main-AppWindow-1")
+                    }
 
-                    placeWindow(window)
+                    // Place window at a specific position
+                    print("🟢 centered", centered)
+                    if centered {
+                        placeWindow(window)
+                    }
                 }
             })
     }
@@ -51,11 +61,13 @@ struct ContentView: View {
             Text("it finally works!")
                 .font(.largeTitle)
 
-            Text(window?.underlyingWindow?.frameAutosaveName ?? "-")
-            Text("\(String(describing: window))")
+            if let window {
+                Text(window.underlyingWindow?.frameAutosaveName ?? "-")
+                Text("\(String(describing: window))")
 
-            Button("Dump") {
-                dump(window)
+                Button("Dump") {
+                    dump(window)
+                }
             }
         }
         .padding()

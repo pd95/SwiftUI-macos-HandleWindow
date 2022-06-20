@@ -16,12 +16,34 @@ struct HandleWindowApp: App {
         }
 
         Settings {
+            SettingsView()
+        }
+    }
+}
+
+struct SettingsView: View {
+    @AppStorage("overwriteAutosaveName") private var overwriteAutosaveName = true
+    @AppStorage("centered") private var windowCentered = true
+
+    var body: some View {
+        Form {
             GroupBox {
-                Button("Reset to defaults & restart", action: resetToDefaults)
-                    .padding()
+                VStack(alignment: .leading) {
+                    Toggle("Overwrite frameAutosaveName", isOn: $overwriteAutosaveName)
+                    Toggle("Center all new windows", isOn: $windowCentered)
+
+                    Divider()
+
+                    Button("Reset to defaults & restart", role: .destructive, action: resetToDefaults)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
             }
             .padding()
         }
+        .frame(maxWidth: 400)
     }
 
     private func resetToDefaults() {
