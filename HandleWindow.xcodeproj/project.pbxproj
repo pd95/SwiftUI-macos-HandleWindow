@@ -15,6 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		171DB9482860C9FD00351CE3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		17341730285E1C6C008E0D72 /* HandleWindow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HandleWindow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		17341733285E1C6C008E0D72 /* HandleWindowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleWindowApp.swift; sourceTree = "<group>"; };
 		17341735285E1C6C008E0D72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -54,6 +55,7 @@
 		17341732285E1C6C008E0D72 /* HandleWindow */ = {
 			isa = PBXGroup;
 			children = (
+				171DB9482860C9FD00351CE3 /* Info.plist */,
 				17341733285E1C6C008E0D72 /* HandleWindowApp.swift */,
 				17341735285E1C6C008E0D72 /* ContentView.swift */,
 				17341742285E1C94008E0D72 /* WindowAccessor.swift */,
@@ -278,6 +280,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HandleWindow/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -306,6 +309,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HandleWindow/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

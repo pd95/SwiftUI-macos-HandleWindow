@@ -54,6 +54,7 @@ struct ContentWindowWrapper: View {
 
 struct ContentView: View {
     @Environment(\.window) var window
+    @Environment(\.openURL) var openURL
 
     var body: some View {
         print(Self.self, #function, window)
@@ -64,7 +65,7 @@ struct ContentView: View {
             if let window {
                 VStack {
                     HStack {
-                        Text("Window ID:")
+                        Text("Window Group ID:")
                             .bold()
                             .frame(maxWidth: .infinity, alignment: .trailing)
                         Text(window.windowGroupID)
@@ -87,8 +88,20 @@ struct ContentView: View {
                 }
                 .padding()
 
-                Button("Dump") {
-                    dump(window)
+                HStack {
+                    if window.windowGroupID == "secondary" {
+                        Button("Main") {
+                            openURL(URL(string: "handleWindow://main")!)
+                        }
+                    } else {
+                        Button("Secondary") {
+                            openURL(URL(string: "handleWindow://secondary")!)
+                        }
+                    }
+
+                    Button("Dump") {
+                        dump(window)
+                    }
                 }
             }
         }

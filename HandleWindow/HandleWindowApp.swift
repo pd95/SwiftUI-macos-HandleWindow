@@ -11,9 +11,16 @@ import SwiftUI
 struct HandleWindowApp: App {
 
     var body: some Scene {
-        WindowGroup(id: "main") {
+        WindowGroup("Main", id: "main") {
             ContentWindowWrapper()
         }
+        .handlesExternalEvents(matching: ["main"])
+
+        WindowGroup("Secondary", id: "secondary") {
+            ContentView()
+                .trackUnderlyingWindow()
+        }
+        .handlesExternalEvents(matching: ["secondary"])
 
         Settings {
             SettingsView()
