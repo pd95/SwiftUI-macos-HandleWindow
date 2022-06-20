@@ -8,7 +8,10 @@
 import SwiftUI
 import Combine
 
-struct WindowAccessor: NSViewRepresentable {
+/// This view will add a `NSView` to the hierarchy and track its `window` property to
+/// get a handle to the `NSWindow`.
+/// The coordinator object is responsible for this KVO observation, triggering the relevant callbacks and updating `WindowState`
+private struct WindowAccessor: NSViewRepresentable {
     @Binding var state: WindowState
 
     func makeNSView(context: Context) -> NSView {
@@ -44,7 +47,8 @@ struct WindowAccessor: NSViewRepresentable {
             state.underlyingWindow = nil
         }
 
-        /// This function uses KVO to observe the `window` property of `view` and calls `onChange()`
+        /// This function uses KVO to observe the `window` property of `view` and calls `onConnect()`
+        /// and starts observing window visibiltiy and closing.
         func monitorView(_ view: NSView) {
             view.publisher(for: \.window)
                 .removeDuplicates()
@@ -61,7 +65,7 @@ struct WindowAccessor: NSViewRepresentable {
                 .store(in: &cancellables)
         }
 
-        /// This function uses notifications to track closing of `window`
+        /// This function uses notifications to track closing of our views underlying `window`
         private func monitorClosing(of window: NSWindow) {
             NotificationCenter.default
                 .publisher(for: NSWindow.willCloseNotification, object: window)
@@ -105,6 +109,7 @@ extension EnvironmentValues {
     }
 }
 
+/// This view modifier is holding and initialising `WindowState`, publishes it in the environment and installs the `WindowAccessor` view in the views background.
 private struct WindowTracker: ViewModifier {
     @State private var state: WindowState
 
