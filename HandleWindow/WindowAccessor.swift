@@ -134,6 +134,14 @@ private struct WindowTracker: ViewModifier {
 struct WindowState {
     var underlyingWindow: NSWindow?
     var isVisible: Bool = false
+
+    var windowGroupID: String {
+        underlyingWindow?.identifier?.rawValue.split(separator: "-").first.map(String.init) ?? ""
+    }
+
+    var windowGroupInstance: Int {
+        Int(underlyingWindow?.identifier?.rawValue.split(separator: "-").last.map({ String($0) }) ?? "") ?? 0
+    }
 }
 
 

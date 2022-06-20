@@ -62,8 +62,30 @@ struct ContentView: View {
                 .font(.largeTitle)
 
             if let window {
-                Text(window.underlyingWindow?.frameAutosaveName ?? "-")
-                Text("\(String(describing: window))")
+                VStack {
+                    HStack {
+                        Text("Window ID:")
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                        Text(window.windowGroupID)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack {
+                        Text("Window Instance:")
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                        Text(window.windowGroupInstance, format: .number)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack {
+                        Text("frameAutosaveName:")
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                        Text(window.underlyingWindow?.frameAutosaveName ?? "-")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding()
 
                 Button("Dump") {
                     dump(window)
