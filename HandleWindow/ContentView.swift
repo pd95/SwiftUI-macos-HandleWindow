@@ -14,8 +14,8 @@ let HEIGHT: CGFloat = 200
 struct ContentWindowWrapper: View {
     var body: some View {
         ContentView()
-            //.handleWindowEvents()
-            .handleWindowEvents(onAppear: { window, isVisible in
+            //.trackUnderlyingWindow()
+            .trackUnderlyingWindow(onVisibilityChange: { window, isVisible in
                 print("isVisible", isVisible, window.frame, window.frameAutosaveName, window.identifier?.rawValue ?? "-")
                 if isVisible {
                     print(window.frameAutosaveName, window.frame)

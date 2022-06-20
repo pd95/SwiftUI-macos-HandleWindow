@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 struct WindowAccessor: NSViewRepresentable {
-    @Binding var holder: WindowState
+    @Binding var state: WindowState
 
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
@@ -27,11 +27,11 @@ struct WindowAccessor: NSViewRepresentable {
     class WindowMonitor: NSObject {
         private var cancellables = Set<AnyCancellable>()
 
-        @Binding private var holder: WindowState
+        @Binding private var state: WindowState
 
         init(_ parent: WindowAccessor) {
             print("🟡 Coordinator", #function)
-            self._holder = parent._holder
+            self._state = parent._state
         }
 
         deinit {
@@ -41,7 +41,7 @@ struct WindowAccessor: NSViewRepresentable {
         func dismantle() {
             print("🟡 Coordinator", #function)
             cancellables.removeAll()
-            holder.underlyingWindow = nil
+            state.underlyingWindow = nil
         }
 
         /// This function uses KVO to observe the `window` property of `view` and calls `onChange()`
@@ -51,8 +51,8 @@ struct WindowAccessor: NSViewRepresentable {
                 .dropFirst()
                 .sink { [weak self] newWindow in
                     guard let self = self else { return }
-                    self.holder.underlyingWindow = newWindow
-                    self.holder.onConnect?(newWindow)
+                    self.state.underlyingWindow = newWindow
+                    self.state.onConnect?(newWindow)
                     if let newWindow = newWindow {
                         self.monitorClosing(of: newWindow)
                         self.monitorVisibility(newWindow)
@@ -67,7 +67,7 @@ struct WindowAccessor: NSViewRepresentable {
                 .publisher(for: NSWindow.willCloseNotification, object: window)
                 .sink { [weak self] notification in
                     guard let self = self else { return }
-                    self.holder.onConnect?(nil)
+                    self.state.onConnect?(nil)
                     self.dismantle()
                 }
                 .store(in: &cancellables)
@@ -79,8 +79,8 @@ struct WindowAccessor: NSViewRepresentable {
                 .dropFirst()  // we know: the first value is not interesting
                 .sink(receiveValue: { [weak self, weak window] isVisible in
                     guard let self, let window else { return }
-                    self.holder.isVisible = isVisible
-                    self.holder.onAppear?(window, isVisible)
+                    self.state.isVisible = isVisible
+                    self.state.onVisibilityChange?(window, isVisible)
                 })
                 .store(in: &cancellables)
         }
@@ -88,38 +88,38 @@ struct WindowAccessor: NSViewRepresentable {
 }
 
 
-private struct CurrentWindowEnvironmentKey: EnvironmentKey {
+private struct WindowStateEnvironmentKey: EnvironmentKey {
     static var defaultValue: WindowState?
 }
 
 extension EnvironmentValues {
     var currentWindow: NSWindow? {
-        self[CurrentWindowEnvironmentKey.self]?.underlyingWindow
+        self[WindowStateEnvironmentKey.self]?.underlyingWindow
     }
 }
 
 extension EnvironmentValues {
     var window: WindowState? {
-        get { self[CurrentWindowEnvironmentKey.self] }
-        set { self[CurrentWindowEnvironmentKey.self] = newValue }
+        get { self[WindowStateEnvironmentKey.self] }
+        set { self[WindowStateEnvironmentKey.self] = newValue }
     }
 }
 
-private struct CurrentWindowTracker: ViewModifier {
+private struct WindowTracker: ViewModifier {
     @State private var state: WindowState
 
-    init(onConnect: ((NSWindow?) -> Void)?, onAppear: ((NSWindow, Bool) -> Void)?) {
+    init(onConnect: ((NSWindow?) -> Void)?, onVisibilityChange: ((NSWindow, Bool) -> Void)?) {
         _state = State(initialValue: WindowState(
             underlyingWindow: nil,
             onConnect: onConnect,
-            onAppear: onAppear
+            onVisibilityChange: onVisibilityChange
         ))
     }
 
     func body(content: Content) -> some View {
         print(Self.self, #function, state)
         return content
-            .background(WindowAccessor(holder: $state))
+            .background(WindowAccessor(state: $state))
             .environment(\.window, state)
     }
 }
@@ -128,13 +128,13 @@ struct WindowState {
     var underlyingWindow: NSWindow?
 
     var onConnect: ((NSWindow?) -> Void)?
-    var onAppear: ((NSWindow, Bool) -> Void)?
+    var onVisibilityChange: ((NSWindow, Bool) -> Void)?
     var isVisible: Bool = false
 }
 
 
 extension View {
-    func handleWindowEvents(onConnect: ((NSWindow?) -> Void)? = nil, onAppear: ((NSWindow, Bool) -> Void)? = nil) -> some View {
-        return self.modifier(CurrentWindowTracker(onConnect: onConnect, onAppear: onAppear))
+    func trackUnderlyingWindow(onConnect: ((NSWindow?) -> Void)? = nil, onVisibilityChange: ((NSWindow, Bool) -> Void)? = nil) -> some View {
+        return self.modifier(WindowTracker(onConnect: onConnect, onVisibilityChange: onVisibilityChange))
     }
 }
