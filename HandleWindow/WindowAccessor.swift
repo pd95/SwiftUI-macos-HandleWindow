@@ -83,7 +83,6 @@ struct WindowAccessor: NSViewRepresentable {
                 .dropFirst()  // we know: the first value is not interesting
                 .sink(receiveValue: { [weak self, weak window] isVisible in
                     guard let self, let window else { return }
-                    print("isVisible", isVisible, window.frame, window.frameAutosaveName)
                     self.onAppear?(window, isVisible)
                 })
                 .store(in: &cancellables)
@@ -116,12 +115,8 @@ private struct CurrentWindowTracker: ViewModifier {
             .background(
                 WindowAccessor(
                     onConnect: { newWindow in
-                        print(Self.self, #function, "updating window", newWindow)
                         onConnect?(newWindow)
-//                        Task {
-//                            print("🔴 setting window to", newWindow)
-                            window = newWindow
-//                        }
+                        window = newWindow
                     },
                     onAppear: onAppear
                 )
