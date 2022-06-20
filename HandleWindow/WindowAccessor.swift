@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 struct WindowAccessor: NSViewRepresentable {
-    @Binding var holder: WindowState!
+    @Binding var holder: WindowState
 
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
@@ -27,7 +27,7 @@ struct WindowAccessor: NSViewRepresentable {
     class WindowMonitor: NSObject {
         private var cancellables = Set<AnyCancellable>()
 
-        @Binding private var holder: WindowState?
+        @Binding private var holder: WindowState
 
         init(_ parent: WindowAccessor) {
             print("🟡 Coordinator", #function)
@@ -41,7 +41,7 @@ struct WindowAccessor: NSViewRepresentable {
         func dismantle() {
             print("🟡 Coordinator", #function)
             cancellables.removeAll()
-            holder = nil
+            holder.underlyingWindow = nil
         }
 
         /// This function uses KVO to observe the `window` property of `view` and calls `onChange()`
@@ -51,8 +51,8 @@ struct WindowAccessor: NSViewRepresentable {
                 .dropFirst()
                 .sink { [weak self] newWindow in
                     guard let self = self else { return }
-                    self.holder?.underlyingWindow = newWindow
-                    self.holder?.onConnect?(newWindow)
+                    self.holder.underlyingWindow = newWindow
+                    self.holder.onConnect?(newWindow)
                     if let newWindow = newWindow {
                         self.monitorClosing(of: newWindow)
                         self.monitorVisibility(newWindow)
@@ -67,7 +67,7 @@ struct WindowAccessor: NSViewRepresentable {
                 .publisher(for: NSWindow.willCloseNotification, object: window)
                 .sink { [weak self] notification in
                     guard let self = self else { return }
-                    self.holder?.onConnect?(nil)
+                    self.holder.onConnect?(nil)
                     self.dismantle()
                 }
                 .store(in: &cancellables)
@@ -79,8 +79,8 @@ struct WindowAccessor: NSViewRepresentable {
                 .dropFirst()  // we know: the first value is not interesting
                 .sink(receiveValue: { [weak self, weak window] isVisible in
                     guard let self, let window else { return }
-                    self.holder?.isVisible = isVisible
-                    self.holder?.onAppear?(window, isVisible)
+                    self.holder.isVisible = isVisible
+                    self.holder.onAppear?(window, isVisible)
                 })
                 .store(in: &cancellables)
         }
@@ -94,8 +94,7 @@ private struct CurrentWindowEnvironmentKey: EnvironmentKey {
 
 extension EnvironmentValues {
     var currentWindow: NSWindow? {
-        get { self[CurrentWindowEnvironmentKey.self]?.underlyingWindow }
-        set { }
+        self[CurrentWindowEnvironmentKey.self]?.underlyingWindow
     }
 }
 
@@ -107,10 +106,10 @@ extension EnvironmentValues {
 }
 
 private struct CurrentWindowTracker: ViewModifier {
-    @State private var state: WindowState?
+    @State private var state: WindowState
 
     init(onConnect: ((NSWindow?) -> Void)?, onAppear: ((NSWindow, Bool) -> Void)?) {
-        _state = .init(initialValue: WindowState(
+        _state = State(initialValue: WindowState(
             underlyingWindow: nil,
             onConnect: onConnect,
             onAppear: onAppear
