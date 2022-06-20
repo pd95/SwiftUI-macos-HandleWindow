@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		171DB94A2860CCF000351CE3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 171DB9492860CCF000351CE3 /* SettingsView.swift */; };
 		17341734285E1C6C008E0D72 /* HandleWindowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17341733285E1C6C008E0D72 /* HandleWindowApp.swift */; };
 		17341736285E1C6C008E0D72 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17341735285E1C6C008E0D72 /* ContentView.swift */; };
 		17341738285E1C6C008E0D72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17341737285E1C6C008E0D72 /* Assets.xcassets */; };
@@ -16,6 +17,7 @@
 
 /* Begin PBXFileReference section */
 		171DB9482860C9FD00351CE3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		171DB9492860CCF000351CE3 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		17341730285E1C6C008E0D72 /* HandleWindow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HandleWindow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		17341733285E1C6C008E0D72 /* HandleWindowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleWindowApp.swift; sourceTree = "<group>"; };
 		17341735285E1C6C008E0D72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -55,12 +57,13 @@
 		17341732285E1C6C008E0D72 /* HandleWindow */ = {
 			isa = PBXGroup;
 			children = (
-				171DB9482860C9FD00351CE3 /* Info.plist */,
 				17341733285E1C6C008E0D72 /* HandleWindowApp.swift */,
 				17341735285E1C6C008E0D72 /* ContentView.swift */,
+				171DB9492860CCF000351CE3 /* SettingsView.swift */,
 				17341742285E1C94008E0D72 /* WindowAccessor.swift */,
 				17341737285E1C6C008E0D72 /* Assets.xcassets */,
 				1734173C285E1C6C008E0D72 /* HandleWindow.entitlements */,
+				171DB9482860C9FD00351CE3 /* Info.plist */,
 				17341739285E1C6C008E0D72 /* Preview Content */,
 			);
 			path = HandleWindow;
@@ -145,6 +148,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				17341743285E1C94008E0D72 /* WindowAccessor.swift in Sources */,
+				171DB94A2860CCF000351CE3 /* SettingsView.swift in Sources */,
 				17341736285E1C6C008E0D72 /* ContentView.swift in Sources */,
 				17341734285E1C6C008E0D72 /* HandleWindowApp.swift in Sources */,
 			);
