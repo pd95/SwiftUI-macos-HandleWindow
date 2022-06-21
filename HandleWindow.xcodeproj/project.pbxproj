@@ -18,6 +18,7 @@
 /* Begin PBXFileReference section */
 		171DB9482860C9FD00351CE3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		171DB9492860CCF000351CE3 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		171DB96628621E2200351CE3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		17341730285E1C6C008E0D72 /* HandleWindow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HandleWindow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		17341733285E1C6C008E0D72 /* HandleWindowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleWindowApp.swift; sourceTree = "<group>"; };
 		17341735285E1C6C008E0D72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -41,6 +42,7 @@
 		17341727285E1C6C008E0D72 = {
 			isa = PBXGroup;
 			children = (
+				171DB96628621E2200351CE3 /* README.md */,
 				17341732285E1C6C008E0D72 /* HandleWindow */,
 				17341731285E1C6C008E0D72 /* Products */,
 			);
