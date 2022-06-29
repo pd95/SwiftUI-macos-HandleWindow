@@ -14,9 +14,6 @@ import Combine
 private struct WindowAccessor: NSViewRepresentable {
     @Binding var state: WindowState
 
-    let onConnect: ((NSWindow?) -> Void)?
-    let onVisibilityChange: ((NSWindow, Bool) -> Void)?
-
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
         context.coordinator.monitorView(view)
@@ -32,16 +29,12 @@ private struct WindowAccessor: NSViewRepresentable {
 
     class WindowMonitor: NSObject {
         private var cancellables = Set<AnyCancellable>()
-        private var onConnect: ((NSWindow?) -> Void)?
-        private var onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
         @Binding private var state: WindowState
 
         init(_ parent: WindowAccessor) {
             print("🟡 Coordinator", #function)
             self._state = parent._state
-            self.onConnect = parent.onConnect
-            self.onVisibilityChange = parent.onVisibilityChange
         }
 
         deinit {
@@ -63,7 +56,7 @@ private struct WindowAccessor: NSViewRepresentable {
                 .sink { [weak self] newWindow in
                     guard let self = self else { return }
                     self.state.underlyingWindow = newWindow
-                    self.onConnect?(newWindow)
+                    self.state.onConnect?(newWindow)
                     if let newWindow = newWindow {
                         self.monitorClosing(of: newWindow)
                         self.monitorVisibility(newWindow)
@@ -78,7 +71,7 @@ private struct WindowAccessor: NSViewRepresentable {
                 .publisher(for: NSWindow.willCloseNotification, object: window)
                 .sink { [weak self] notification in
                     guard let self = self else { return }
-                    self.onConnect?(nil)
+                    self.state.onConnect?(nil)
                     self.dismantle()
                 }
                 .store(in: &cancellables)
@@ -91,7 +84,7 @@ private struct WindowAccessor: NSViewRepresentable {
                 .sink(receiveValue: { [weak self, weak window] isVisible in
                     guard let self, let window else { return }
                     self.state.isVisible = isVisible
-                    self.onVisibilityChange?(window, isVisible)
+                    self.state.onVisibilityChange?(window, isVisible)
                 })
                 .store(in: &cancellables)
         }
@@ -99,41 +92,13 @@ private struct WindowAccessor: NSViewRepresentable {
 }
 
 
-private struct WindowStateEnvironmentKey: EnvironmentKey {
-    static var defaultValue: WindowState?
-}
-
-extension EnvironmentValues {
-    var currentWindow: NSWindow? {
-        self[WindowStateEnvironmentKey.self]?.underlyingWindow
-    }
-}
-
-extension EnvironmentValues {
-    var window: WindowState? {
-        get { self[WindowStateEnvironmentKey.self] }
-        set { self[WindowStateEnvironmentKey.self] = newValue }
-    }
-}
-
-/// This view modifier is holding and initialising `WindowState`, publishes it in the environment and installs the `WindowAccessor` view in the views background.
-private struct WindowTracker: ViewModifier {
-    @State private var state = WindowState()
-
-    let onConnect: ((NSWindow?) -> Void)?
-    let onVisibilityChange: ((NSWindow, Bool) -> Void)?
-
-    func body(content: Content) -> some View {
-        print(Self.self, #function, state)
-        return content
-            .background(WindowAccessor(state: $state, onConnect: onConnect, onVisibilityChange: onVisibilityChange))
-            .environment(\.window, state)
-    }
-}
-
+/// Storage for window related state and helpers
 struct WindowState {
     var underlyingWindow: NSWindow?
     var isVisible: Bool = false
+
+    private(set) var onConnect: ((NSWindow?) -> Void)?
+    private(set) var onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
     var windowGroupID: String {
         underlyingWindow?.identifier?.rawValue.split(separator: "-").first.map(String.init) ?? ""
@@ -144,6 +109,34 @@ struct WindowState {
     }
 }
 
+
+private struct WindowStateEnvironmentKey: EnvironmentKey {
+    static var defaultValue = WindowState()
+}
+
+extension EnvironmentValues {
+    var window: WindowState {
+        get { self[WindowStateEnvironmentKey.self] }
+        set { self[WindowStateEnvironmentKey.self] = newValue }
+    }
+}
+
+/// This view modifier is holding and initialising `WindowState`, publishes it in the environment and installs the `WindowAccessor` view in the views background.
+private struct WindowTracker: ViewModifier {
+
+    @State private var state: WindowState
+
+    init(onConnect: ((NSWindow?) -> Void)?, onVisibilityChange: ((NSWindow, Bool) -> Void)?) {
+        _state = .init(initialValue: WindowState(onConnect: onConnect, onVisibilityChange: onVisibilityChange))
+    }
+
+    func body(content: Content) -> some View {
+        print(Self.self, #function, state)
+        return content
+            .background(WindowAccessor(state: $state))
+            .environment(\.window, state)
+    }
+}
 
 extension View {
     func trackUnderlyingWindow(onConnect: ((NSWindow?) -> Void)? = nil, onVisibilityChange: ((NSWindow, Bool) -> Void)? = nil) -> some View {
