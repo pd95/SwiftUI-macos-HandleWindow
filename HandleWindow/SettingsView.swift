@@ -20,7 +20,7 @@ struct SettingsView: View {
 
                     Divider()
 
-                    Button("Reset to defaults & restart", role: .destructive, action: resetToDefaults)
+                    Button("Reset to defaults & quit", role: .destructive, action: resetToDefaults)
                         .frame(maxWidth: .infinity)
                         .padding(.top)
                 }
@@ -39,13 +39,6 @@ struct SettingsView: View {
         defaults.removePersistentDomain(forName: identifier)
         defaults.synchronize()
 
-
-        let url = URL(fileURLWithPath: Bundle.main.resourcePath!)
-        let path = url.deletingLastPathComponent().deletingLastPathComponent().absoluteString
-        let task = Process()
-        task.launchPath = "/usr/bin/open"
-        task.arguments = [path]
-        task.launch()
         NSApplication.shared.stop(nil)
     }
 }
