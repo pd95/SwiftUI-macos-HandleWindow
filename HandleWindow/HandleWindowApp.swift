@@ -15,10 +15,12 @@ struct HandleWindowApp: App {
         ManagedWindow("Main", id: "main") {
             ContentView()
         }
+        .defaultPosition(.topLeading)
 
         ManagedWindowGroup("Secondary", id: "secondary") {
             ContentView()
         }
+        .defaultPosition(.center)
 
         Settings {
             SettingsView()

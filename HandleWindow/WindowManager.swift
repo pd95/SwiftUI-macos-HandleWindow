@@ -15,7 +15,7 @@ struct SceneConfiguration: Identifiable {
     let id: SceneID
     let title: String
     let orderBy: Int
-    //var defaultPosition: UnitPoint
+    var defaultPosition: UnitPoint?
     //var defaultSize: CGSize
     var contentType: Any.Type
     var isSingleWindow: Bool
@@ -140,6 +140,56 @@ class WindowManager: ObservableObject {
                 }
             }
         }
+    }
+
+    // MARK: - Handling default positioning of window
+    func setDefaultPosition(_ position: UnitPoint, for id: SceneID) {
+        // Check whether there is already a default position stored:
+        guard UserDefaults.standard.value(forKey: "NSWindow Frame \(id)-AppWindow-1") == nil else {
+            return
+        }
+        print("🟣 ", #function, "set to", position, "for", id)
+
+        scenes[id]?.defaultPosition = position
+    }
+
+    func applyDefaultPosition(to window: NSWindow, for id: SceneID) {
+        if windows[id, default: []].count == 1,
+           let defaultPosition = scenes[id]?.defaultPosition {
+            print("🟣 ", #function, "to", defaultPosition)
+            placeWindow(window, position: defaultPosition)
+        } else {
+            if let lastWindow = windows[id]?.last(where: { $0 != window }) {
+                var frame = lastWindow.frame
+                frame.origin.x += 29
+                frame.origin.y -= 29
+                window.setFrame(frame, display: false)
+                print("🟣 ", #function, "offseting new window to", frame)
+
+            } else {
+                print("🟣 ", #function, "restoring position from UserDefaults")
+                window.setFrameUsingName("NSWindow Frame \(id)-AppWindow-1", force: true)
+            }
+        }
+    }
+
+    private func placeWindow(_ window: NSWindow, position: UnitPoint) {
+        guard let screen = window.screen else {
+            print("🔴 window is not attached to a screen")
+            return
+        }
+
+        let visibleFrame = screen.visibleFrame
+        let screenSize = visibleFrame.size
+        let windowSize = window.frame.size
+
+        let projectedPoint = CGPoint(
+            x: min(max(visibleFrame.origin.x, position.x * screenSize.width - windowSize.width/2),
+                   visibleFrame.origin.x+visibleFrame.width - windowSize.width),
+            y: max(visibleFrame.origin.y, (1-position.y) * screenSize.height + visibleFrame.origin.y - windowSize.height/2)
+        )
+
+        window.setFrameOrigin(projectedPoint)
     }
 }
 
