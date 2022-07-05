@@ -33,12 +33,7 @@ struct SettingsView: View {
     }
 
     private func resetToDefaults() {
-        let defaults = UserDefaults.standard
-
-        let identifier = Bundle.main.bundleIdentifier!
-        defaults.removePersistentDomain(forName: identifier)
-        defaults.synchronize()
-
+        UserDefaults.standard.removeAppSettings()
         NSApplication.shared.stop(nil)
     }
 }
