@@ -8,24 +8,12 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("overwriteAutosaveName") private var overwriteAutosaveName = true
-    @AppStorage("centered") private var windowCentered = true
-
     var body: some View {
         Form {
             GroupBox {
-                VStack(alignment: .leading) {
-                    Toggle("Overwrite frameAutosaveName", isOn: $overwriteAutosaveName)
-                    Toggle("Center all new windows", isOn: $windowCentered)
-
-                    Divider()
-
-                    Button("Reset to defaults & quit", role: .destructive, action: resetToDefaults)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
+                Button("Reset to defaults & quit", role: .destructive, action: resetToDefaults)
+                    .frame(maxWidth: .infinity)
+                    .padding()
             }
             .padding()
         }
