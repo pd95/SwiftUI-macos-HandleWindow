@@ -31,9 +31,9 @@ struct ManagedWindowGroup<Content: View>: Scene {
     var body: some Scene {
         WindowGroup(title, id: id) {
             content
-                .trackUnderlyingWindow { window in
-                    print("onConnect", window?.identifier?.rawValue ?? "-")
-                    if let window {
+                .trackUnderlyingWindow { windowState in
+                    print("onConnect", windowState.windowIdentifier)
+                    if let window = windowState.underlyingWindow {
                         windowManager.registerOpenWindow(for: id, window: window)
                     }
                 } onVisibilityChange: { window, isVisible in

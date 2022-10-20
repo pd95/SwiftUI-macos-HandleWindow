@@ -14,7 +14,7 @@ import Combine
 private struct WindowAccessor: NSViewRepresentable {
     @Binding var state: WindowState
 
-    let onConnect: ((NSWindow?) -> Void)?
+    let onConnect: ((WindowState) -> Void)?
     let onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
     func makeNSView(context: Context) -> NSView {
@@ -58,9 +58,9 @@ private struct WindowAccessor: NSViewRepresentable {
                 .removeDuplicates()
                 .dropFirst()
                 .sink { [weak self] newWindow in
-                    guard let self = self else { return }
-                    self.parent?.state.underlyingWindow = newWindow
-                    self.parent?.onConnect?(newWindow)
+                    guard let self, let parent = self.parent else { return }
+                    parent.state.underlyingWindow = newWindow
+                    parent.onConnect?(parent.state)
                     if let newWindow = newWindow {
                         self.monitorClosing(of: newWindow)
                         self.monitorVisibility(newWindow)
@@ -75,7 +75,9 @@ private struct WindowAccessor: NSViewRepresentable {
                 .publisher(for: NSWindow.willCloseNotification, object: window)
                 .sink { [weak self] notification in
                     guard let self = self else { return }
-                    self.parent?.onConnect?(nil)
+                    if let parent = self.parent {
+                        parent.onConnect?(parent.state)
+                    }
                     self.dismantle()
                 }
                 .store(in: &cancellables)
@@ -131,7 +133,7 @@ struct WindowTracker: ViewModifier {
 
     @State private var state = WindowState()
 
-    let onConnect: ((NSWindow?) -> Void)?
+    let onConnect: ((WindowState) -> Void)?
     let onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
     func body(content: Content) -> some View {
@@ -143,7 +145,7 @@ struct WindowTracker: ViewModifier {
 }
 
 extension View {
-    func trackUnderlyingWindow(onConnect: ((NSWindow?) -> Void)? = nil, onVisibilityChange: ((NSWindow, Bool) -> Void)? = nil) -> some View {
+    func trackUnderlyingWindow(onConnect: ((WindowState) -> Void)? = nil, onVisibilityChange: ((NSWindow, Bool) -> Void)? = nil) -> some View {
         return self.modifier(WindowTracker(onConnect: onConnect, onVisibilityChange: onVisibilityChange))
     }
 }
