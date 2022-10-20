@@ -101,12 +101,16 @@ struct WindowState {
     var underlyingWindow: NSWindow?
     var isVisible: Bool = false
 
+    var windowIdentifier: String {
+        underlyingWindow?.identifier?.rawValue ?? ""
+    }
+
     var windowGroupID: String {
-        underlyingWindow?.identifier?.rawValue.split(separator: "-").first.map(String.init) ?? ""
+        windowIdentifier.split(separator: "-").first.map(String.init) ?? ""
     }
 
     var windowGroupInstance: Int {
-        Int(underlyingWindow?.identifier?.rawValue.split(separator: "-").last.map({ String($0) }) ?? "") ?? 0
+        Int(windowIdentifier.split(separator: "-").last.map({ String($0) }) ?? "") ?? 0
     }
 }
 

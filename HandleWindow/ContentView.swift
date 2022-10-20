@@ -22,6 +22,13 @@ struct ContentView: View {
             if let window {
                 VStack {
                     HStack {
+                        Text("Window Identifier:")
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                        Text(window.windowIdentifier)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack {
                         Text("Window Group ID:")
                             .bold()
                             .frame(maxWidth: .infinity, alignment: .trailing)
