@@ -47,7 +47,6 @@ private struct WindowAccessor: NSViewRepresentable {
         func dismantle() {
             print("🟡 Coordinator", #function)
             cancellables.removeAll()
-            parent?.state.underlyingWindow = nil
             parent = nil
         }
 
@@ -76,7 +75,10 @@ private struct WindowAccessor: NSViewRepresentable {
                 .sink { [weak self] notification in
                     guard let self = self else { return }
                     if let parent = self.parent {
+                        parent.state.underlyingWindow = nil
                         parent.onConnect?(parent.state)
+
+                        self.parent = nil
                     }
                     self.dismantle()
                 }
