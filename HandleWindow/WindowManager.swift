@@ -45,7 +45,7 @@ class WindowManager: ObservableObject {
     private var scheme: String
     private var windows = [SceneID: [NSWindow]]()
 
-    private var cancellables = Set<AnyCancellable>()
+    private var trackWindowWillClose: AnyCancellable?
 
     private init() {
         // Ugly way to extract primary App URL scheme from Info.plist
@@ -83,17 +83,23 @@ class WindowManager: ObservableObject {
         guard windows[sceneID, default: []].contains(window) == false else {
             return
         }
-        print("🟣 registered window \(window) for \(sceneID))")
+        print("🟣 registered window \(window.identifier?.rawValue ?? "-") for \(sceneID))")
         windows[sceneID, default: []].append(window)
 
-        NotificationCenter.default
-            .publisher(for: NSWindow.willCloseNotification, object: window)
-            .sink { [weak self, weak window] _ in
-                print("🟣 removing window", window?.identifier ?? "")
-                guard let self, let window else { return }
-                self.windows[sceneID]?.removeAll(where: { $0 == window })
-            }
-            .store(in: &cancellables)
+        // Register for "window will close" notification only once
+        if trackWindowWillClose == nil {
+            trackWindowWillClose = NotificationCenter.default
+                .publisher(for: NSWindow.willCloseNotification)
+                .sink { [weak self] notification in
+                    guard let window = notification.object as? NSWindow, let sceneID = window.sceneID, let self else { return }
+                    print("🟣 removing window \(window.identifier?.rawValue ?? "-") for \(sceneID))")
+                    if let index = self.windows[sceneID]?.firstIndex(of: window) {
+                        self.windows[sceneID]?.remove(at: index)
+                    } else {
+                        print("🔴 window not found!")
+                    }
+                }
+        }
     }
 
     func openWindow(id: SceneID) {
@@ -193,7 +199,13 @@ class WindowManager: ObservableObject {
     }
 }
 
-
+private extension NSWindow {
+    /// Returns scene ID based on window identifier (=first part)
+    var sceneID: SceneID? {
+        guard let sceneIdentifier = identifier?.rawValue.split(separator: "-").first else { return nil }
+        return String(sceneIdentifier)
+    }
+}
 
 private struct WindowManagerEnvironmentKey: EnvironmentKey {
     static var defaultValue = WindowManager.shared
