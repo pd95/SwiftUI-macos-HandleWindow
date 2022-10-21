@@ -12,7 +12,7 @@ import Combine
 /// get a handle to the `NSWindow`.
 /// The coordinator object is responsible for this KVO observation, triggering the relevant callbacks and updating `WindowState`
 struct WindowAccessor: NSViewRepresentable {
-    let onConnect: (NSWindow?) -> Void
+    let onConnect: (NSWindow) -> Void
     let onDisconnect: (() -> Void)?
     let onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
@@ -33,12 +33,12 @@ struct WindowAccessor: NSViewRepresentable {
         private var cancellables = Set<AnyCancellable>()
         private var viewTracker: Cancellable?
 
-        private let onConnect: ((NSWindow?) -> Void)
+        private let onConnect: ((NSWindow) -> Void)
         private let onDisconnect: (() -> Void)?
         private let onVisibilityChange: ((NSWindow, Bool) -> Void)?
         private var window: NSWindow?
 
-        init(_ onChange: @escaping (NSWindow?) -> Void, onDisconnect: (() -> Void)?, onVisibilityChange: ((NSWindow, Bool) -> Void)?) {
+        init(_ onChange: @escaping (NSWindow) -> Void, onDisconnect: (() -> Void)?, onVisibilityChange: ((NSWindow, Bool) -> Void)?) {
             print("🟡 Coordinator", #function)
             self.onConnect = onChange
             self.onDisconnect = onDisconnect

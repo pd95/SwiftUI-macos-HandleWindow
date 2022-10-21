@@ -31,12 +31,9 @@ struct WindowTracker: ViewModifier {
         print(Self.self, #function, state)
         return content
             .background(
-                WindowAccessor(onConnect: {
-                    let isConnect = $0 != nil
-                    if isConnect, let window = $0 {
-                        self.state.underlyingWindow = window
-                    }
-                    onConnect?(self.state, isConnect)
+                WindowAccessor(onConnect: { window in
+                    self.state.underlyingWindow = window
+                    onConnect?(self.state, true)
                 }, onDisconnect: {
                     onConnect?(self.state, false)
                     self.state.underlyingWindow = NSWindow()
