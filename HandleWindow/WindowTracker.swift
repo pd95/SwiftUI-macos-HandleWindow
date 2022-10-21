@@ -31,7 +31,7 @@ struct WindowTracker: ViewModifier {
         print(Self.self, #function, state)
         return content
             .background(
-                WindowAccessor(onConnect: connectToWindow, onDisconnect: disconnectFromWindow)
+                WindowAccessor(onConnect: connectToWindow, onWillClose: windowWillClose)
             )
             .environment(\.window, state)
     }
@@ -47,7 +47,7 @@ struct WindowTracker: ViewModifier {
         })
     }
 
-    private func disconnectFromWindow() {
+    private func windowWillClose() {
         onConnect?(state, false)
         state = WindowState()
     }

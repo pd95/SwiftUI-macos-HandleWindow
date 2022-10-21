@@ -13,7 +13,7 @@ import Combine
 /// The coordinator object is responsible for this KVO observation, triggering the relevant callbacks and updating `WindowState`
 struct WindowAccessor: NSViewRepresentable {
     let onConnect: (NSWindow, WindowMonitor) -> Void
-    let onDisconnect: (() -> Void)?
+    let onWillClose: () -> Void
 
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
@@ -25,21 +25,21 @@ struct WindowAccessor: NSViewRepresentable {
     }
 
     func makeCoordinator() -> WindowMonitor {
-        WindowMonitor(onConnect, onDisconnect: onDisconnect)
+        WindowMonitor(onConnect, onWillClose: onWillClose)
     }
 
     class WindowMonitor: NSObject {
         private var cancellables = Set<AnyCancellable>()
         private var viewTracker: Cancellable?
 
-        private let onConnect: ((NSWindow, WindowMonitor) -> Void)
-        private let onDisconnect: (() -> Void)?
+        private let onConnect: (NSWindow, WindowMonitor) -> Void
+        private let onWillClose: () -> Void
         private var window: NSWindow?
 
-        init(_ onChange: @escaping (NSWindow, WindowMonitor) -> Void, onDisconnect: (() -> Void)?) {
+        init(_ onChange: @escaping (NSWindow, WindowMonitor) -> Void, onWillClose: @escaping () -> Void) {
             print("🟡 Coordinator", #function)
             self.onConnect = onChange
-            self.onDisconnect = onDisconnect
+            self.onWillClose = onWillClose
         }
 
         deinit {
@@ -73,7 +73,7 @@ struct WindowAccessor: NSViewRepresentable {
                 .publisher(for: NSWindow.willCloseNotification, object: window)
                 .sink { [weak self] notification in
                     guard let self = self else { return }
-                    self.onDisconnect?()
+                    self.onWillClose()
                     self.dismantle()
                 }
                 .store(in: &cancellables)
