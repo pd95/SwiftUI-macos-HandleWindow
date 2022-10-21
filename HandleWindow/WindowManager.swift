@@ -45,8 +45,6 @@ class WindowManager: ObservableObject {
     private var scheme: String
     private var windows = [SceneID: [NSWindow]]()
 
-    private var trackWindowWillClose: AnyCancellable?
-
     private init() {
         // Ugly way to extract primary App URL scheme from Info.plist
         guard let infoDictionary = Bundle.main.infoDictionary,
@@ -76,30 +74,27 @@ class WindowManager: ObservableObject {
         )
     }
 
-    func registerOpenWindow(for sceneID: SceneID, window: NSWindow) {
+    func registerWindow(for sceneID: SceneID, window: NSWindow) {
         guard scenes[sceneID] != nil else {
             fatalError("No window group with ID \(sceneID)")
         }
         guard windows[sceneID, default: []].contains(window) == false else {
             return
         }
-        print("🟣 registered window \(window.identifier?.rawValue ?? "-") for \(sceneID))")
+        print("🟣 registered new window for \(sceneID)")
         windows[sceneID, default: []].append(window)
+    }
 
-        // Register for "window will close" notification only once
-        if trackWindowWillClose == nil {
-            trackWindowWillClose = NotificationCenter.default
-                .publisher(for: NSWindow.willCloseNotification)
-                .sink { [weak self] notification in
-                    guard let window = notification.object as? NSWindow, let sceneID = window.sceneID, let self else { return }
-                    print("🟣 removing window \(window.identifier?.rawValue ?? "-") for \(sceneID))")
-                    if let index = self.windows[sceneID]?.firstIndex(of: window) {
-                        self.windows[sceneID]?.remove(at: index)
-                    } else {
-                        print("🔴 window not found!")
-                    }
-                }
+    func unregisterWindow(for sceneID: SceneID, window: NSWindow) {
+        guard scenes[sceneID] != nil else {
+            fatalError("No window group with ID \(sceneID)")
         }
+        guard let index = windows[sceneID, default: []].firstIndex(of: window) else {
+            print("🔴 window \(window.identifier?.rawValue ?? "-") not found!")
+            return
+        }
+        print("🟣 removing window \(window.identifier?.rawValue ?? "-") for \(sceneID)")
+        windows[sceneID]?.remove(at: index)
     }
 
     func openWindow(id: SceneID) {

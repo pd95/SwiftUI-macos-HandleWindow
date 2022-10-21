@@ -34,9 +34,9 @@ struct ManagedWindowGroup<Content: View>: Scene {
                 .trackUnderlyingWindow { windowState, isConnect in
                     print("onConnect", windowState.windowIdentifier, isConnect)
                     if isConnect {
-                        windowManager.registerOpenWindow(for: id, window: windowState.underlyingWindow)
+                        windowManager.registerWindow(for: id, window: windowState.underlyingWindow)
                     } else {
-                        //windowManager.unregisterWindow(for: id, window: windowState.underlyingWindow)
+                        windowManager.unregisterWindow(for: id, window: windowState.underlyingWindow)
                     }
                 } onVisibilityChange: { window, isVisible in
                     print("isVisible", isVisible, window.frame, window.frameAutosaveName, window.identifier?.rawValue ?? "-")
