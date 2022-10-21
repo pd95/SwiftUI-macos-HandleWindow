@@ -55,10 +55,9 @@ struct WindowAccessor: NSViewRepresentable {
         /// This function uses KVO to observe the `window` property of `view` and calls `onConnect()`
         /// and starts observing window visibility and closing.
         func monitorView(_ view: NSView) {
-            viewTracker = view.publisher(for: \.window)
-                .compactMap({ $0 })
+            viewTracker = view.publisher(for: \.window, options: .new)
                 .sink { [weak self] newWindow in
-                    guard let self = self else { return }
+                    guard let self, let newWindow else { return }
                     self.window = newWindow
                     self.monitorClosing(of: newWindow)
                     self.onConnect(newWindow, self)
