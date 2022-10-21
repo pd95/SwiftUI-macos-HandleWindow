@@ -9,11 +9,11 @@ import SwiftUI
 
 /// Storage for window related state and helpers
 struct WindowState {
-    var underlyingWindow: NSWindow?
+    var underlyingWindow = NSWindow()
     var isVisible: Bool = false
 
     var windowIdentifier: String {
-        underlyingWindow?.identifier?.rawValue ?? ""
+        underlyingWindow.identifier?.rawValue ?? ""
     }
 
     var windowGroupID: String {

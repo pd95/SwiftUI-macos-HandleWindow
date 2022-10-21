@@ -46,7 +46,7 @@ struct ContentView: View {
                         Text("frameAutosaveName:")
                             .bold()
                             .frame(maxWidth: .infinity, alignment: .trailing)
-                        Text(window.underlyingWindow?.frameAutosaveName ?? "-")
+                        Text(window.underlyingWindow.frameAutosaveName)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }

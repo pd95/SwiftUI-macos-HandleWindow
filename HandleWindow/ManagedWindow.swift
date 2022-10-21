@@ -31,10 +31,12 @@ struct ManagedWindowGroup<Content: View>: Scene {
     var body: some Scene {
         WindowGroup(title, id: id) {
             content
-                .trackUnderlyingWindow { windowState in
-                    print("onConnect", windowState.windowIdentifier)
-                    if let window = windowState.underlyingWindow {
-                        windowManager.registerOpenWindow(for: id, window: window)
+                .trackUnderlyingWindow { windowState, isConnect in
+                    print("onConnect", windowState.windowIdentifier, isConnect)
+                    if isConnect {
+                        windowManager.registerOpenWindow(for: id, window: windowState.underlyingWindow)
+                    } else {
+                        //windowManager.unregisterWindow(for: id, window: windowState.underlyingWindow)
                     }
                 } onVisibilityChange: { window, isVisible in
                     print("isVisible", isVisible, window.frame, window.frameAutosaveName, window.identifier?.rawValue ?? "-")

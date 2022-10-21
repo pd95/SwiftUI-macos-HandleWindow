@@ -24,7 +24,7 @@ struct WindowTracker: ViewModifier {
 
     @State private var state = WindowState()
 
-    let onConnect: ((WindowState) -> Void)?
+    let onConnect: ((WindowState, Bool) -> Void)?
     let onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
     func body(content: Content) -> some View {
@@ -32,8 +32,11 @@ struct WindowTracker: ViewModifier {
         return content
             .background(
                 WindowAccessor(onConnect: {
-                    self.state.underlyingWindow = $0
-                    onConnect?(self.state)
+                    let isConnect = $0 != nil
+                    if isConnect, let window = $0 {
+                        self.state.underlyingWindow = window
+                    }
+                    onConnect?(self.state, isConnect)
                 }, onVisibilityChange: { window, isVisible in
                     state.isVisible = isVisible
                     onVisibilityChange?(window, isVisible)
@@ -44,7 +47,7 @@ struct WindowTracker: ViewModifier {
 }
 
 extension View {
-    func trackUnderlyingWindow(onConnect: ((WindowState) -> Void)? = nil, onVisibilityChange: ((NSWindow, Bool) -> Void)? = nil) -> some View {
+    func trackUnderlyingWindow(onConnect: ((WindowState, Bool) -> Void)? = nil, onVisibilityChange: ((NSWindow, Bool) -> Void)? = nil) -> some View {
         return self.modifier(WindowTracker(onConnect: onConnect, onVisibilityChange: onVisibilityChange))
     }
 }
