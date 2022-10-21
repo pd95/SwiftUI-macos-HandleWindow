@@ -16,6 +16,8 @@
 		17341743285E1C94008E0D72 /* WindowAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17341742285E1C94008E0D72 /* WindowAccessor.swift */; };
 		175070D6286C8127006DB200 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175070D5286C8127006DB200 /* WindowManager.swift */; };
 		175070D8286C8153006DB200 /* ManagedWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175070D7286C8153006DB200 /* ManagedWindow.swift */; };
+		17FFE4BE2902980D00388AC5 /* WindowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17FFE4BD2902980D00388AC5 /* WindowState.swift */; };
+		17FFE4C02902984000388AC5 /* WindowTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17FFE4BF2902984000388AC5 /* WindowTracker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 		17341742285E1C94008E0D72 /* WindowAccessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowAccessor.swift; sourceTree = "<group>"; };
 		175070D5286C8127006DB200 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		175070D7286C8153006DB200 /* ManagedWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedWindow.swift; sourceTree = "<group>"; };
+		17FFE4BD2902980D00388AC5 /* WindowState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowState.swift; sourceTree = "<group>"; };
+		17FFE4BF2902984000388AC5 /* WindowTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowTracker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +76,8 @@
 				171DB9492860CCF000351CE3 /* SettingsView.swift */,
 				1717AA832874395200B83820 /* UserDefaults-removeSettings.swift */,
 				17341742285E1C94008E0D72 /* WindowAccessor.swift */,
+				17FFE4BD2902980D00388AC5 /* WindowState.swift */,
+				17FFE4BF2902984000388AC5 /* WindowTracker.swift */,
 				17341737285E1C6C008E0D72 /* Assets.xcassets */,
 				1734173C285E1C6C008E0D72 /* HandleWindow.entitlements */,
 				171DB9482860C9FD00351CE3 /* Info.plist */,
@@ -158,11 +164,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				17FFE4C02902984000388AC5 /* WindowTracker.swift in Sources */,
 				17341743285E1C94008E0D72 /* WindowAccessor.swift in Sources */,
 				171DB94A2860CCF000351CE3 /* SettingsView.swift in Sources */,
 				17341736285E1C6C008E0D72 /* ContentView.swift in Sources */,
 				17341734285E1C6C008E0D72 /* HandleWindowApp.swift in Sources */,
 				1717AA842874395200B83820 /* UserDefaults-removeSettings.swift in Sources */,
+				17FFE4BE2902980D00388AC5 /* WindowState.swift in Sources */,
 				175070D6286C8127006DB200 /* WindowManager.swift in Sources */,
 				175070D8286C8153006DB200 /* ManagedWindow.swift in Sources */,
 			);

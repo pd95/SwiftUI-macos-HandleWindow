@@ -11,7 +11,7 @@ import Combine
 /// This view will add a `NSView` to the hierarchy and track its `window` property to
 /// get a handle to the `NSWindow`.
 /// The coordinator object is responsible for this KVO observation, triggering the relevant callbacks and updating `WindowState`
-private struct WindowAccessor: NSViewRepresentable {
+struct WindowAccessor: NSViewRepresentable {
     let onConnect: (NSWindow?) -> Void
     let onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
@@ -89,66 +89,5 @@ private struct WindowAccessor: NSViewRepresentable {
                 })
                 .store(in: &cancellables)
         }
-    }
-}
-
-
-/// Storage for window related state and helpers
-struct WindowState {
-    var underlyingWindow: NSWindow?
-    var isVisible: Bool = false
-
-    var windowIdentifier: String {
-        underlyingWindow?.identifier?.rawValue ?? ""
-    }
-
-    var windowGroupID: String {
-        windowIdentifier.split(separator: "-").first.map(String.init) ?? ""
-    }
-
-    var windowGroupInstance: Int {
-        Int(windowIdentifier.split(separator: "-").last.map({ String($0) }) ?? "") ?? 0
-    }
-}
-
-
-private struct WindowStateEnvironmentKey: EnvironmentKey {
-    static var defaultValue = WindowState()
-}
-
-extension EnvironmentValues {
-    var window: WindowState {
-        get { self[WindowStateEnvironmentKey.self] }
-        set { self[WindowStateEnvironmentKey.self] = newValue }
-    }
-}
-
-/// This view modifier is holding and initialising `WindowState`, publishes it in the environment and installs the `WindowAccessor` view in the views background.
-struct WindowTracker: ViewModifier {
-
-    @State private var state = WindowState()
-
-    let onConnect: ((WindowState) -> Void)?
-    let onVisibilityChange: ((NSWindow, Bool) -> Void)?
-
-    func body(content: Content) -> some View {
-        print(Self.self, #function, state)
-        return content
-            .background(
-                WindowAccessor(onConnect: {
-                    self.state.underlyingWindow = $0
-                    onConnect?(self.state)
-                }, onVisibilityChange: { window, isVisible in
-                    state.isVisible = isVisible
-                    onVisibilityChange?(window, isVisible)
-                })
-            )
-            .environment(\.window, state)
-    }
-}
-
-extension View {
-    func trackUnderlyingWindow(onConnect: ((WindowState) -> Void)? = nil, onVisibilityChange: ((NSWindow, Bool) -> Void)? = nil) -> some View {
-        return self.modifier(WindowTracker(onConnect: onConnect, onVisibilityChange: onVisibilityChange))
     }
 }
