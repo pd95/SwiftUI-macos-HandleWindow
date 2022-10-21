@@ -9,6 +9,7 @@ import SwiftUI
 
 /// Storage for window related state and helpers
 struct WindowState {
+    var monitor: WindowMonitor?
     var underlyingWindow = NSWindow()
     var isVisible: Bool = false
 

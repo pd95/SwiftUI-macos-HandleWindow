@@ -31,21 +31,25 @@ struct WindowTracker: ViewModifier {
         print(Self.self, #function, state)
         return content
             .background(
-                WindowAccessor(onConnect: { window, monitor in
-                    self.state.underlyingWindow = window
-                    onConnect?(self.state, true)
-
-                    // Setup visibility tracking
-                    monitor.observeWindowAttribute(for: \.isVisible, using: { (window, isVisible) -> Void in
-                        state.isVisible = isVisible
-                        onVisibilityChange?(window, isVisible)
-                    })
-                }, onDisconnect: {
-                    onConnect?(self.state, false)
-                    self.state.underlyingWindow = NSWindow()
-                })
+                WindowAccessor(onConnect: connectToWindow, onDisconnect: disconnectFromWindow)
             )
             .environment(\.window, state)
+    }
+
+    private func connectToWindow(_ window: NSWindow, _ monitor: WindowMonitor) {
+        state = WindowState(monitor: monitor, underlyingWindow: window)
+        onConnect?(state, true)
+
+        // Setup visibility tracking
+        monitor.observeWindowAttribute(for: \.isVisible, options: .new, using: { (window, isVisible) -> Void in
+            state.isVisible = isVisible
+            onVisibilityChange?(window, isVisible)
+        })
+    }
+
+    private func disconnectFromWindow() {
+        onConnect?(state, false)
+        state = WindowState()
     }
 }
 
