@@ -37,6 +37,9 @@ struct WindowTracker: ViewModifier {
                         self.state.underlyingWindow = window
                     }
                     onConnect?(self.state, isConnect)
+                    if isConnect == false {
+                        self.state.underlyingWindow = NSWindow()
+                    }
                 }, onVisibilityChange: { window, isVisible in
                     state.isVisible = isVisible
                     onVisibilityChange?(window, isVisible)
