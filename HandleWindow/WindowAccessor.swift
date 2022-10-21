@@ -12,9 +12,8 @@ import Combine
 /// get a handle to the `NSWindow`.
 /// The coordinator object is responsible for this KVO observation, triggering the relevant callbacks and updating `WindowState`
 struct WindowAccessor: NSViewRepresentable {
-    let onConnect: (NSWindow) -> Void
+    let onConnect: (NSWindow, WindowMonitor) -> Void
     let onDisconnect: (() -> Void)?
-    let onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
@@ -26,23 +25,21 @@ struct WindowAccessor: NSViewRepresentable {
     }
 
     func makeCoordinator() -> WindowMonitor {
-        WindowMonitor(onConnect, onDisconnect: onDisconnect, onVisibilityChange: onVisibilityChange)
+        WindowMonitor(onConnect, onDisconnect: onDisconnect)
     }
 
     class WindowMonitor: NSObject {
         private var cancellables = Set<AnyCancellable>()
         private var viewTracker: Cancellable?
 
-        private let onConnect: ((NSWindow) -> Void)
+        private let onConnect: ((NSWindow, WindowMonitor) -> Void)
         private let onDisconnect: (() -> Void)?
-        private let onVisibilityChange: ((NSWindow, Bool) -> Void)?
         private var window: NSWindow?
 
-        init(_ onChange: @escaping (NSWindow) -> Void, onDisconnect: (() -> Void)?, onVisibilityChange: ((NSWindow, Bool) -> Void)?) {
+        init(_ onChange: @escaping (NSWindow, WindowMonitor) -> Void, onDisconnect: (() -> Void)?) {
             print("🟡 Coordinator", #function)
             self.onConnect = onChange
             self.onDisconnect = onDisconnect
-            self.onVisibilityChange = onVisibilityChange
         }
 
         deinit {
@@ -62,24 +59,12 @@ struct WindowAccessor: NSViewRepresentable {
                 .compactMap({ $0 })
                 .sink { [weak self] newWindow in
                     guard let self = self else { return }
-                    self.onConnect(newWindow)
                     self.window = newWindow
                     self.monitorClosing(of: newWindow)
-                    if self.onVisibilityChange != nil {
-                        self.observeWindowAttribute(for: \.isVisible, options: [.prior, .new], using: { [weak self] (window, isVisible) -> Void in
-                            self?.dumpState(window, "visibleChange")
-                            self?.onVisibilityChange?(window, isVisible)
-                        })
-                    }
-                    self.observeWindowAttribute(for: \.frame, using: { [weak self] window, frame in
-                        self?.dumpState(window, "frameChange")
-                    })
+                    self.onConnect(newWindow, self)
+
                     self.viewTracker = nil
                 }
-        }
-
-        private func dumpState(_ window: NSWindow, _ comment: String = "") {
-            print("⚫️ \(window.identifier?.rawValue ?? "-") \(comment) frame: \(window.frame) isVisible: \(window.isVisible) isKeyWindow: \(window.isKeyWindow)")
         }
 
         /// This function uses notifications to track closing of our views underlying `window`
@@ -127,4 +112,8 @@ struct WindowAccessor: NSViewRepresentable {
             })
         }
     }
+}
+
+
+extension WindowAccessor.WindowMonitor: WindowMonitor {
 }
