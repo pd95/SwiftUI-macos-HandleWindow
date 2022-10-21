@@ -12,9 +12,7 @@ import Combine
 /// get a handle to the `NSWindow`.
 /// The coordinator object is responsible for this KVO observation, triggering the relevant callbacks and updating `WindowState`
 private struct WindowAccessor: NSViewRepresentable {
-    @Binding var state: WindowState
-
-    let onConnect: ((WindowState) -> Void)?
+    let onConnect: (NSWindow?) -> Void
     let onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
     func makeNSView(context: Context) -> NSView {
@@ -27,17 +25,20 @@ private struct WindowAccessor: NSViewRepresentable {
     }
 
     func makeCoordinator() -> WindowMonitor {
-        WindowMonitor(self)
+        WindowMonitor(onConnect, onVisibilityChange: onVisibilityChange)
     }
 
     class WindowMonitor: NSObject {
         private var cancellables = Set<AnyCancellable>()
+        private var viewTracker: Cancellable?
 
-        private var parent: WindowAccessor?
+        private var onConnect: ((NSWindow?) -> Void)
+        private var onVisibilityChange: ((NSWindow, Bool) -> Void)?
 
-        init(_ parent: WindowAccessor) {
+        init(_ onChange: @escaping (NSWindow?) -> Void, onVisibilityChange: ((NSWindow, Bool) -> Void)?) {
             print("🟡 Coordinator", #function)
-            self.parent = parent
+            self.onConnect = onChange
+            self.onVisibilityChange = onVisibilityChange
         }
 
         deinit {
@@ -47,25 +48,23 @@ private struct WindowAccessor: NSViewRepresentable {
         func dismantle() {
             print("🟡 Coordinator", #function)
             cancellables.removeAll()
-            parent = nil
         }
 
         /// This function uses KVO to observe the `window` property of `view` and calls `onConnect()`
-        /// and starts observing window visibiltiy and closing.
+        /// and starts observing window visibility and closing.
         func monitorView(_ view: NSView) {
-            view.publisher(for: \.window)
+            viewTracker = view.publisher(for: \.window)
                 .removeDuplicates()
                 .dropFirst()
                 .sink { [weak self] newWindow in
-                    guard let self, let parent = self.parent else { return }
-                    parent.state.underlyingWindow = newWindow
-                    parent.onConnect?(parent.state)
+                    guard let self = self else { return }
+                    self.onConnect(newWindow)
                     if let newWindow = newWindow {
                         self.monitorClosing(of: newWindow)
                         self.monitorVisibility(newWindow)
+                        self.viewTracker = nil
                     }
                 }
-                .store(in: &cancellables)
         }
 
         /// This function uses notifications to track closing of our views underlying `window`
@@ -74,13 +73,8 @@ private struct WindowAccessor: NSViewRepresentable {
                 .publisher(for: NSWindow.willCloseNotification, object: window)
                 .sink { [weak self] notification in
                     guard let self = self else { return }
-                    if let parent = self.parent {
-                        parent.state.underlyingWindow = nil
-                        parent.onConnect?(parent.state)
-
-                        self.parent = nil
-                    }
-                    self.dismantle()
+                    self.onConnect(nil)
+                    self.cancellables.removeAll()
                 }
                 .store(in: &cancellables)
         }
@@ -90,9 +84,8 @@ private struct WindowAccessor: NSViewRepresentable {
             window.publisher(for: \.isVisible)
                 .dropFirst()  // we know: the first value is not interesting
                 .sink(receiveValue: { [weak self, weak window] isVisible in
-                    guard let self, let window else { return }
-                    self.parent?.state.isVisible = isVisible
-                    self.parent?.onVisibilityChange?(window, isVisible)
+                    guard let window else { return }
+                    self?.onVisibilityChange?(window, isVisible)
                 })
                 .store(in: &cancellables)
         }
@@ -141,7 +134,15 @@ struct WindowTracker: ViewModifier {
     func body(content: Content) -> some View {
         print(Self.self, #function, state)
         return content
-            .background(WindowAccessor(state: $state, onConnect: onConnect, onVisibilityChange: onVisibilityChange))
+            .background(
+                WindowAccessor(onConnect: {
+                    self.state.underlyingWindow = $0
+                    onConnect?(self.state)
+                }, onVisibilityChange: { window, isVisible in
+                    state.isVisible = isVisible
+                    onVisibilityChange?(window, isVisible)
+                })
+            )
             .environment(\.window, state)
     }
 }
