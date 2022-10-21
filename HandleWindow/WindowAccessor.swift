@@ -78,42 +78,42 @@ struct WindowAccessor: NSViewRepresentable {
                 }
                 .store(in: &cancellables)
         }
-
-        /// Utility function to observe any `NSWindow` attribute for changes (based on KVO)
-        func observeWindowAttribute<Value>(
-            for keyPath: KeyPath<NSWindow, Value>,
-            options: NSKeyValueObservingOptions = [.new],
-            using handler: @escaping (NSWindow, Value) -> Bool
-        ) {
-            guard let window else {
-                fatalError("Cannot observe keyPath \(keyPath) without initialized window")
-            }
-            var cancellable: AnyCancellable!
-            cancellable = window.publisher(for: keyPath, options: options)
-                .sink(receiveValue: { [weak self, weak window] value in
-                    guard let window else { return }
-                    let shouldContinue = handler(window, value)
-                    if !shouldContinue {
-                        cancellable.cancel()
-                        self?.cancellables.remove(cancellable)
-                    }
-                })
-            cancellables.insert(cancellable)
-        }
-
-        func observeWindowAttribute<Value>(
-            for keyPath: KeyPath<NSWindow, Value>,
-            options: NSKeyValueObservingOptions = [.new],
-            using handler: @escaping (NSWindow, Value) -> Void
-        ) {
-            observeWindowAttribute(for: keyPath, options: options, using: {
-                handler($0, $1)
-                return true
-            })
-        }
     }
 }
 
 
 extension WindowAccessor.WindowMonitor: WindowMonitor {
+
+    /// Utility function to observe any `NSWindow` attribute for changes (based on KVO)
+    func observeWindowAttribute<Value>(
+        for keyPath: KeyPath<NSWindow, Value>,
+        options: NSKeyValueObservingOptions,
+        using handler: @escaping (NSWindow, Value) -> Bool
+    ) {
+        guard let window else {
+            fatalError("Cannot observe keyPath \(keyPath) without initialized window")
+        }
+        var cancellable: AnyCancellable!
+        cancellable = window.publisher(for: keyPath, options: options)
+            .sink(receiveValue: { [weak self, weak window] value in
+                guard let window else { return }
+                let shouldContinue = handler(window, value)
+                if !shouldContinue {
+                    cancellable.cancel()
+                    self?.cancellables.remove(cancellable)
+                }
+            })
+        cancellables.insert(cancellable)
+    }
+
+    func observeWindowAttribute<Value>(
+        for keyPath: KeyPath<NSWindow, Value>,
+        options: NSKeyValueObservingOptions,
+        using handler: @escaping (NSWindow, Value) -> Void
+    ) {
+        observeWindowAttribute(for: keyPath, options: options, using: {
+            handler($0, $1)
+            return true
+        })
+    }
 }
