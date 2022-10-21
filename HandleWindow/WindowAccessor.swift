@@ -73,8 +73,10 @@ struct WindowAccessor: NSViewRepresentable {
                 .publisher(for: NSWindow.willCloseNotification, object: window)
                 .sink { [weak self] notification in
                     guard let self = self else { return }
-                    self.onWillClose()
-                    self.dismantle()
+                    DispatchQueue.main.async {
+                        self.onWillClose()
+                        self.dismantle()
+                    }
                 }
                 .store(in: &cancellables)
         }
