@@ -36,6 +36,7 @@ struct WindowAccessor: NSViewRepresentable {
         private let onConnect: ((NSWindow?) -> Void)
         private let onDisconnect: (() -> Void)?
         private let onVisibilityChange: ((NSWindow, Bool) -> Void)?
+        private var window: NSWindow?
 
         init(_ onChange: @escaping (NSWindow?) -> Void, onDisconnect: (() -> Void)?, onVisibilityChange: ((NSWindow, Bool) -> Void)?) {
             print("🟡 Coordinator", #function)
@@ -50,6 +51,7 @@ struct WindowAccessor: NSViewRepresentable {
 
         private func dismantle() {
             print("🟡 Coordinator", #function)
+            window = nil
             cancellables.removeAll()
         }
 
@@ -61,10 +63,23 @@ struct WindowAccessor: NSViewRepresentable {
                 .sink { [weak self] newWindow in
                     guard let self = self else { return }
                     self.onConnect(newWindow)
+                    self.window = newWindow
                     self.monitorClosing(of: newWindow)
-                    self.monitorVisibility(newWindow)
+                    if self.onVisibilityChange != nil {
+                        self.observeWindowAttribute(for: \.isVisible, options: [.prior, .new], using: { [weak self] (window, isVisible) -> Void in
+                            self?.dumpState(window, "visibleChange")
+                            self?.onVisibilityChange?(window, isVisible)
+                        })
+                    }
+                    self.observeWindowAttribute(for: \.frame, using: { [weak self] window, frame in
+                        self?.dumpState(window, "frameChange")
+                    })
                     self.viewTracker = nil
                 }
+        }
+
+        private func dumpState(_ window: NSWindow, _ comment: String = "") {
+            print("⚫️ \(window.identifier?.rawValue ?? "-") \(comment) frame: \(window.frame) isVisible: \(window.isVisible) isKeyWindow: \(window.isKeyWindow)")
         }
 
         /// This function uses notifications to track closing of our views underlying `window`
@@ -79,15 +94,37 @@ struct WindowAccessor: NSViewRepresentable {
                 .store(in: &cancellables)
         }
 
-        /// This function uses KVO to track `isVisible` property of `window`
-        private func monitorVisibility(_ window: NSWindow) {
-            window.publisher(for: \.isVisible)
-                .dropFirst()  // we know: the first value is not interesting
-                .sink(receiveValue: { [weak self, weak window] isVisible in
+        /// Utility function to observe any `NSWindow` attribute for changes (based on KVO)
+        func observeWindowAttribute<Value>(
+            for keyPath: KeyPath<NSWindow, Value>,
+            options: NSKeyValueObservingOptions = [.new],
+            using handler: @escaping (NSWindow, Value) -> Bool
+        ) {
+            guard let window else {
+                fatalError("Cannot observe keyPath \(keyPath) without initialized window")
+            }
+            var cancellable: AnyCancellable!
+            cancellable = window.publisher(for: keyPath, options: options)
+                .sink(receiveValue: { [weak self, weak window] value in
                     guard let window else { return }
-                    self?.onVisibilityChange?(window, isVisible)
+                    let shouldContinue = handler(window, value)
+                    if !shouldContinue {
+                        cancellable.cancel()
+                        self?.cancellables.remove(cancellable)
+                    }
                 })
-                .store(in: &cancellables)
+            cancellables.insert(cancellable)
+        }
+
+        func observeWindowAttribute<Value>(
+            for keyPath: KeyPath<NSWindow, Value>,
+            options: NSKeyValueObservingOptions = [.new],
+            using handler: @escaping (NSWindow, Value) -> Void
+        ) {
+            observeWindowAttribute(for: keyPath, options: options, using: {
+                handler($0, $1)
+                return true
+            })
         }
     }
 }
