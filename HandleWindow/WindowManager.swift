@@ -171,12 +171,12 @@ class WindowManager: ObservableObject {
         UserDefaults.standard.set(frameDescriptor, forKey: sceneFrameAutosaveNameInUserDefaults(sceneID))
     }
 
-    func setDefaultPosition(_ position: UnitPoint, for id: SceneID) {
+    func setDefaultUnitPointPosition(_ position: UnitPoint, for id: SceneID) {
         print("🟣 ", #function, "set to", position, "for", id)
         scenes[id]?.defaultPosition = position
     }
 
-    func applyDefaultPosition(to window: NSWindow, for id: SceneID) {
+    func setInitialFrame(to window: NSWindow, for id: SceneID) {
         print("🟣 ", #function, "  window is currently at: \(window.frame)")
         // Position relative to last opened window
         if let lastWindow = windows[id]?.last(where: { $0 != window }) {
@@ -195,29 +195,29 @@ class WindowManager: ObservableObject {
             } else if let defaultPosition = scenes[id]?.defaultPosition {
                 // Place at default location (if window is opened for the first time)
                 print("  placing at UnitPoint position", defaultPosition)
-                placeWindow(window, position: defaultPosition)
+                let frameOrigin = frameOriginForUnitPointPosition(window, position: defaultPosition)
+                window.setFrameOrigin(frameOrigin)
             }
         }
         print("  window frame: \(window.frame)")
     }
 
-    private func placeWindow(_ window: NSWindow, position: UnitPoint) {
+    private func frameOriginForUnitPointPosition(_ window: NSWindow, position: UnitPoint) -> CGPoint {
         guard let screen = window.screen else {
             print("🔴 window is not attached to a screen")
-            return
+            return .zero
         }
 
         let visibleFrame = screen.visibleFrame
-        let screenSize = visibleFrame.size
         let windowSize = window.frame.size
+        let screenSize = CGSize(width: visibleFrame.width-windowSize.width, height: visibleFrame.height-windowSize.height)
 
         let projectedPoint = CGPoint(
-            x: min(max(visibleFrame.origin.x, position.x * screenSize.width - windowSize.width/2),
-                   visibleFrame.origin.x+visibleFrame.width - windowSize.width),
-            y: max(visibleFrame.origin.y, (1-position.y) * screenSize.height + visibleFrame.origin.y - windowSize.height/2)
+            x: visibleFrame.origin.x + min(max(0, position.x * screenSize.width), visibleFrame.width),
+            y: visibleFrame.origin.y + max(0, (1-position.y) * screenSize.height)
         )
 
-        window.setFrameOrigin(projectedPoint)
+        return projectedPoint
     }
 }
 

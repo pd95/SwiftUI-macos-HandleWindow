@@ -41,7 +41,7 @@ struct ManagedWindowGroup<Content: View>: Scene {
                 } onVisibilityChange: { window, isVisible in
                     // Do not interfere with state restoration (where App is not yet active)
                     if NSApplication.shared.isActive && isVisible {
-                        windowManager.applyDefaultPosition(to: window, for: id)
+                        windowManager.setInitialFrame(to: window, for: id)
                     }
                 }
                 .environment(\.openURL, OpenURLAction(handler: windowManager.openURLHandler))
@@ -72,14 +72,14 @@ struct ManagedWindow<Content: View>: Scene {
 
 extension ManagedWindowGroup {
     func defaultPosition(_ position: UnitPoint) -> Self {
-        WindowManager.shared.setDefaultPosition(position, for: id)
+        WindowManager.shared.setDefaultUnitPointPosition(position, for: id)
         return self
     }
 }
 
 extension ManagedWindow {
     func defaultPosition(_ position: UnitPoint) -> Self {
-        WindowManager.shared.setDefaultPosition(position, for: id)
+        WindowManager.shared.setDefaultUnitPointPosition(position, for: id)
         return self
     }
 }
