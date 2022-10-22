@@ -21,6 +21,8 @@ struct SceneConfiguration: Identifiable {
     var isSingleWindow: Bool
 
     var keyboardShortcut: KeyboardShortcut?
+
+    var sceneFrameDescriptor: String?
 }
 
 extension SceneConfiguration: Comparable {
@@ -70,7 +72,8 @@ class WindowManager: ObservableObject {
             orderBy: scenes.count,
             contentType: contentType,
             isSingleWindow: isSingleWindow,
-            keyboardShortcut: scenes.isEmpty ? KeyboardShortcut("N", modifiers: .command) : nil
+            keyboardShortcut: scenes.isEmpty ? KeyboardShortcut("N", modifiers: .command) : nil,
+            sceneFrameDescriptor: sceneFrameFromUserDefaults(id)
         )
     }
 
@@ -95,6 +98,12 @@ class WindowManager: ObservableObject {
         }
         print("🟣 removing window \(window.identifier?.rawValue ?? "-") for \(sceneID)")
         windows[sceneID]?.remove(at: index)
+        if windows[sceneID]?.count == 0 {
+            let frameDescriptor = window.frameDescriptor
+            print("🟣 saving position of last window to UserDefaults: \(frameDescriptor)")
+            scenes[sceneID]?.sceneFrameDescriptor = frameDescriptor
+            saveSceneFrameToUserDefaults(sceneID, frameDescriptor: frameDescriptor)
+        }
     }
 
     func openWindow(id: SceneID) {
@@ -144,34 +153,52 @@ class WindowManager: ObservableObject {
     }
 
     // MARK: - Handling default positioning of window
-    func setDefaultPosition(_ position: UnitPoint, for id: SceneID) {
-        // Check whether there is already a default position stored:
-        guard UserDefaults.standard.value(forKey: "NSWindow Frame \(id)-AppWindow-1") == nil else {
-            return
-        }
-        print("🟣 ", #function, "set to", position, "for", id)
 
+    private func sceneFrameAutosaveNameInUserDefaults(_ sceneID: SceneID) -> String {
+        "NSWindow Frame \(sceneID)-AppWindow-1"
+    }
+
+    private func sceneFrameFromUserDefaults(_ sceneID: SceneID) -> String? {
+        let key = sceneFrameAutosaveNameInUserDefaults(sceneID)
+        let value = UserDefaults.standard.string(forKey: key)
+        print("  Reading \(key): \(String(describing: value))")
+        return value
+    }
+
+    private func saveSceneFrameToUserDefaults(_ sceneID: SceneID, frameDescriptor: String) {
+        let key = sceneFrameAutosaveNameInUserDefaults(sceneID)
+        print("  Writing \(key): \(frameDescriptor)")
+        UserDefaults.standard.set(frameDescriptor, forKey: sceneFrameAutosaveNameInUserDefaults(sceneID))
+    }
+
+    func setDefaultPosition(_ position: UnitPoint, for id: SceneID) {
+        print("🟣 ", #function, "set to", position, "for", id)
         scenes[id]?.defaultPosition = position
     }
 
     func applyDefaultPosition(to window: NSWindow, for id: SceneID) {
-        if windows[id, default: []].count == 1,
-           let defaultPosition = scenes[id]?.defaultPosition {
-            print("🟣 ", #function, "to", defaultPosition)
-            placeWindow(window, position: defaultPosition)
-        } else {
-            if let lastWindow = windows[id]?.last(where: { $0 != window }) {
-                var frame = lastWindow.frame
-                frame.origin.x += 29
-                frame.origin.y -= 29
-                window.setFrame(frame, display: false)
-                print("🟣 ", #function, "offseting new window to", frame)
+        print("🟣 ", #function, "  window is currently at: \(window.frame)")
+        // Position relative to last opened window
+        if let lastWindow = windows[id]?.last(where: { $0 != window }) {
+            var frame = lastWindow.frame
+            frame.origin.x += 29
+            frame.origin.y -= 29
+            print("  placing new window relative to last window", frame)
+            window.setFrame(frame, display: false)
 
-            } else {
-                print("🟣 ", #function, "restoring position from UserDefaults")
-                window.setFrameUsingName("NSWindow Frame \(id)-AppWindow-1", force: true)
+        } else {
+            // Place window where last window was located on closing
+            if let savedFrameDescriptor = scenes[id]?.sceneFrameDescriptor {
+                print("  placing at last saved position: ", savedFrameDescriptor)
+                window.setFrame(from: savedFrameDescriptor)
+
+            } else if let defaultPosition = scenes[id]?.defaultPosition {
+                // Place at default location (if window is opened for the first time)
+                print("  placing at UnitPoint position", defaultPosition)
+                placeWindow(window, position: defaultPosition)
             }
         }
+        print("  window frame: \(window.frame)")
     }
 
     private func placeWindow(_ window: NSWindow, position: UnitPoint) {
@@ -197,7 +224,12 @@ class WindowManager: ObservableObject {
 private extension NSWindow {
     /// Returns scene ID based on window identifier (=first part)
     var sceneID: SceneID? {
-        guard let sceneIdentifier = identifier?.rawValue.split(separator: "-").first else { return nil }
+        guard let parts = identifier?.rawValue.split(separator: "-"),
+              parts.count == 3 && parts[1] == "AppWindow",
+              let sceneIdentifier = parts.first
+        else {
+            return nil
+        }
         return String(sceneIdentifier)
     }
 }

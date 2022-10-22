@@ -39,13 +39,8 @@ struct ManagedWindowGroup<Content: View>: Scene {
                         windowManager.unregisterWindow(for: id, window: windowState.underlyingWindow)
                     }
                 } onVisibilityChange: { window, isVisible in
-                    print("isVisible", isVisible, window.frame, window.frameAutosaveName, window.identifier?.rawValue ?? "-")
-                    if isSingleWindow {
-                        // Ensure we always use the same frameAutosaveName to store the location of the window
-                        window.setFrameAutosaveName("\(id)-AppWindow-1")
-                    }
-
-                    if isVisible {
+                    // Do not interfere with state restoration (where App is not yet active)
+                    if NSApplication.shared.isActive && isVisible {
                         windowManager.applyDefaultPosition(to: window, for: id)
                     }
                 }
