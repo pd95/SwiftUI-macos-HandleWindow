@@ -7,8 +7,22 @@ So far, I've written a custom `WindowAccessor` implementation (inspired by the o
 me to not only access `NSWindow` instance, but also being called-back when the view is inserted into the window and 
 whenever the window becomes visible/invisible. This allows configuring and positioning a view on screen without flicker!  
 
-I was trying to build some nice, SwiftUI-like window manipulation API... but it is work-in-progress and currently 
-on-hold.
+The project contains currently the following major components:
+
+- `WindowAccessor` used to track the addition of a SwiftUI view to a window (in a background view).
+  It uses the embedded `WindowMonitor` class as a coordinator and to notify callbacks when view has been added or removed
+  from the window. The monitor automatically releases itself when `willCloseNotification` for the given window is received. 
+- `WindowTracker` is a SwiftUI view modifier to embed the `WindowAccessor` and inject a `WindowState` environment variable
+  which can be used by the child views to get access to the `underlyingWindow` or the `WindowMonitor` to track additional
+  `NSWindow` attributes
+- `ManagedWindow` and `ManagedWindowGroup` are SwiftUI scenes (replacing `WindowGroup`) which can be used to easily create
+  multi-window apps (without upgrading to macOS Ventura!). `ManagedWindow` is a single-window scene. It is impossible to
+  open more than one at time. `ManagedWindowGroup` is a group of similar windows.
+- `WindowManager` is the manager of the new window scenes. He makes sure only one instance of a `ManagedWindow` can be 
+  opened and also ensures the last window position (per kind) is persisted.
+- [`HandleWindowApp.swift`](HandleWindow/HandleWindowApp.swift) is an example how to use it.
+
+There is still a lot which can be improved...
 
 ---
 
@@ -45,7 +59,7 @@ The knowledge I gained so far:
 - SwiftUI does a poor job on remembering window positions!
 
   1. It persists the position of a single window of an entire group. Even though you can have multiple windows open.
-     Only one will be reopened: the one which frontmost when the app closed.
+     Only one will be reopened: the one which was frontmost when the app closed.
   2. After app launch, when moving the opened window, closing it and reopening it again (CMD + N), does not reopen it
      near the position where we closed it!
 
