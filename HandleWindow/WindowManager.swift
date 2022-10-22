@@ -183,6 +183,20 @@ class WindowManager: ObservableObject {
             var frame = lastWindow.frame
             frame.origin.x += 29
             frame.origin.y -= 29
+
+            let visibleFrame = window.screen!.visibleFrame
+            if !visibleFrame.contains(frame) {
+                print("  visible frame does not fully contain frame:", visibleFrame, frame)
+                if frame.minY < visibleFrame.minY {
+                    frame.origin.y = visibleFrame.origin.y + visibleFrame.height - frame.height
+                }
+                if frame.maxX > visibleFrame.maxX {
+                    frame.origin.x = visibleFrame.origin.x
+                }
+
+                print("  corrected frame \(frame) is valid=\(visibleFrame.contains(frame))")
+            }
+
             print("  placing new window relative to last window", frame)
             window.setFrame(frame, display: false)
 
