@@ -30,18 +30,13 @@ struct ManagedWindowGroup<Content: View>: Scene {
 
     var body: some Scene {
         WindowGroup(title, id: id) {
-            content
-                .trackUnderlyingWindow { windowState, isConnect in
-                    print("onConnect", windowState.windowIdentifier, isConnect)
-                    if isConnect {
+            WrappedContent(sceneID: id, content: content)
+                .trackUnderlyingWindow { windowState, isConnecting in
+                    print("onConnect", windowState.windowIdentifier, isConnecting)
+                    if isConnecting {
                         windowManager.registerWindow(for: id, window: windowState.underlyingWindow)
                     } else {
                         windowManager.unregisterWindow(for: id, window: windowState.underlyingWindow)
-                    }
-                } onVisibilityChange: { window, isVisible in
-                    // Do not interfere with state restoration (where App is not yet active)
-                    if NSApplication.shared.isActive && isVisible {
-                        windowManager.setInitialFrame(to: window, for: id)
                     }
                 }
                 .environment(\.openURL, OpenURLAction(handler: windowManager.openURLHandler))
@@ -49,6 +44,23 @@ struct ManagedWindowGroup<Content: View>: Scene {
         .handlesExternalEvents(matching: Set([id]))
         .commands {
             windowManager.commands()
+        }
+    }
+
+    private struct WrappedContent<Content: View>: View {
+        @Environment(\.window) private var windowState
+        @Environment(\.windowManager) private var windowManager
+
+        let sceneID: String
+        let content: Content
+
+        var body: some View {
+            content
+                .onChange(of: windowState.isVisible) { isVisible in
+                    if NSApplication.shared.isActive && isVisible {
+                        windowManager.setInitialFrame(to: windowState.underlyingWindow, for: sceneID)
+                    }
+                }
         }
     }
 }

@@ -24,37 +24,33 @@ struct WindowTracker: ViewModifier {
 
     @State private var state = WindowState()
 
-    let onConnect: ((WindowState, Bool) -> Void)?
-    let onVisibilityChange: ((NSWindow, Bool) -> Void)?
+    let onConnect: (WindowState, Bool) -> Void
 
     func body(content: Content) -> some View {
         print(Self.self, #function, state)
         return content
-            .background(
-                WindowAccessor(onConnect: connectToWindow, onWillClose: windowWillClose)
-            )
+            .background(WindowAccessor(onConnect: connectToWindow, onWillClose: windowWillClose))
             .environment(\.window, state)
     }
 
     private func connectToWindow(_ window: NSWindow, _ monitor: WindowMonitor) {
         state = WindowState(monitor: monitor, underlyingWindow: window)
-        onConnect?(state, true)
+        onConnect(state, true)
 
         // Setup visibility tracking
-        monitor.observeWindowAttribute(for: \.isVisible, options: .new, using: { (window, isVisible) -> Void in
+        monitor.observeWindowAttribute(for: \.isVisible, options: .new, using: { _, isVisible in
             state.isVisible = isVisible
-            onVisibilityChange?(window, isVisible)
         })
     }
 
     private func windowWillClose() {
-        onConnect?(state, false)
+        onConnect(state, false)
         state = WindowState()
     }
 }
 
 extension View {
-    func trackUnderlyingWindow(onConnect: ((WindowState, Bool) -> Void)? = nil, onVisibilityChange: ((NSWindow, Bool) -> Void)? = nil) -> some View {
-        return self.modifier(WindowTracker(onConnect: onConnect, onVisibilityChange: onVisibilityChange))
+    func trackUnderlyingWindow(onConnect: @escaping (WindowState, Bool) -> Void) -> some View {
+        return self.modifier(WindowTracker(onConnect: onConnect))
     }
 }
