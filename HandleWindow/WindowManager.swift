@@ -13,7 +13,9 @@ typealias SceneID = String
 
 struct SceneConfiguration: Identifiable {
     let id: SceneID
-    let title: String
+    let isMain: Bool
+    let title: String?
+    let commandName: String
     let orderBy: Int
     var defaultPosition: UnitPoint?
     //var defaultSize: CGSize
@@ -61,20 +63,32 @@ class WindowManager: ObservableObject {
         self.scheme = primaryURLScheme
     }
 
-    func registerWindowGroup(id: SceneID, title: String, contentType: Any.Type, isSingleWindow: Bool) {
+    func registerWindowGroup(id: SceneID, title: String?, contentType: Any.Type, isSingleWindow: Bool) {
         guard scenes[id] == nil else {
             fatalError("Registered twice a window group with ID \(id)")
         }
-        print("🟣 registered scene \(id) for \(contentType), \(type(of: contentType))")
-        scenes[id] = SceneConfiguration(
+        print("🟣 registering scene \(id) for \(contentType), \(type(of: contentType))")
+
+        let commandName: String
+        if let title {
+            commandName = "New \(title) Window"
+        } else {
+            commandName = "New Window"
+        }
+
+        let sceneConfig = SceneConfiguration(
             id: id,
+            isMain: scenes.count == 0,
             title: title,
+            commandName: commandName,
             orderBy: scenes.count,
             contentType: contentType,
             isSingleWindow: isSingleWindow,
             keyboardShortcut: scenes.isEmpty ? KeyboardShortcut("N", modifiers: .command) : nil,
             sceneFrameDescriptor: sceneFrameFromUserDefaults(id)
         )
+        scenes[id] = sceneConfig
+        print("🟣 registered scene \(id) as \(sceneConfig)")
     }
 
     func registerWindow(for sceneID: SceneID, window: NSWindow) {
@@ -146,8 +160,10 @@ class WindowManager: ObservableObject {
     func commands() -> some Commands {
         CommandGroup(replacing: .newItem) {
             Menu("New") {
-                ForEach(scenes.values.sorted()) { scene in
-                    Button(LocalizedStringKey("New \(scene.title) Window"), action: { [weak self] in self?.openWindow(id: scene.id) })
+                ForEach(scenes.values.sorted()
+                    .filter({ $0.title != nil || $0.isMain })
+                ) { scene in
+                    Button(LocalizedStringKey(scene.commandName), action: { [weak self] in self?.openWindow(id: scene.id) })
                         .keyboardShortcut(scene.keyboardShortcut)
                 }
             }
