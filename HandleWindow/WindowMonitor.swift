@@ -28,6 +28,7 @@ class WindowMonitor: NSObject {
     private func dismantle() {
         print("🟡 Coordinator", #function)
         window = nil
+        shouldCloseWindowSubscription = nil
         cancellables.forEach(self.remove)
     }
 
@@ -68,10 +69,49 @@ class WindowMonitor: NSObject {
             }
             .store(bindTo: self)
     }
+
+    // Handle a "should window be closed" check by using a subject
+    private lazy var shouldCloseWindowSubject = PassthroughSubject<Void, Never>()
+    private var shouldCloseWindowSubscription: AnyCancellable?
+
+    fileprivate func interceptCloseAction(_ handler: @escaping () -> Bool) {
+        print(#function)
+        guard let window else { return }
+        if let closeButton = window.standardWindowButton(.closeButton) {
+            closeButton.target = self
+            closeButton.action = #selector(Self.checkAndClose(_:))
+        }
+
+        shouldCloseWindowSubscription = shouldCloseWindowSubject
+            .map(handler)
+            .sink(receiveValue: { [weak window] shouldClose in
+                if shouldClose {
+                    window?.close()
+                } else {
+                    print("Handler rejected closing request")
+                }
+            })
+    }
+
+    @objc
+    private func checkAndClose(_ sender: Any) {
+        print(#function)
+        shouldCloseWindowSubject.send()
+    }
 }
 
 extension AnyCancellable {
     func store(bindTo monitor: WindowMonitor) {
         store(in: &monitor.cancellables)
+    }
+}
+
+extension WindowState {
+    func registerShouldClose(callback: @escaping () -> Bool) {
+        monitor?.interceptCloseAction(callback)
+    }
+
+    func close() {
+        underlyingWindow.performClose(self)
     }
 }

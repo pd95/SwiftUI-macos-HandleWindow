@@ -14,6 +14,8 @@ struct ContentView: View {
 
     let groupID: String
 
+    @State private var hasChanges = false
+
     var body: some View {
         let _ = print("\(Self.self): body executed for ", window.windowGroupID, window.windowGroupInstance)
         let _ = Self._printChanges()
@@ -54,6 +56,13 @@ struct ContentView: View {
                 }
 
                 HStack {
+                    Toggle("Has changes", isOn: $hasChanges)
+                    Button("Try close") {
+                        window.close()
+                    }
+                }
+
+                HStack {
                     if groupID == "secondary" {
                         Button("Main") {
                             openURL(URL(string: "handleWindow://main")!)
@@ -70,6 +79,13 @@ struct ContentView: View {
                 }
             }
         }
+        .onChange(of: window.isVisible, perform: { isVisible in
+            if isVisible {
+                window.registerShouldClose(callback: {
+                    hasChanges == false
+                })
+            }
+        })
         .frame(minWidth: 300)
         .fixedSize(horizontal: true, vertical: false)
         .padding(20)
