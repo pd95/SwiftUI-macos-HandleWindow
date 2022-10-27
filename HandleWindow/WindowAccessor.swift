@@ -29,12 +29,11 @@ struct WindowAccessor: NSViewRepresentable {
     }
 
     class WindowMonitor: NSObject {
-        private var cancellables = Set<AnyCancellable>()
-        private var viewTracker: Cancellable?
+        fileprivate var cancellables = Set<AnyCancellable>()
 
         private let onConnect: (NSWindow, WindowMonitor) -> Void
         private let onWillClose: () -> Void
-        private var window: NSWindow?
+        private weak var window: NSWindow?
 
         init(_ onChange: @escaping (NSWindow, WindowMonitor) -> Void, onWillClose: @escaping () -> Void) {
             print("🟡 Coordinator", #function)
@@ -49,21 +48,31 @@ struct WindowAccessor: NSViewRepresentable {
         private func dismantle() {
             print("🟡 Coordinator", #function)
             window = nil
-            cancellables.removeAll()
+            cancellables.forEach(self.remove)
+        }
+
+        func store(cancellable: AnyCancellable) {
+            cancellables.insert(cancellable)
+        }
+
+        func remove(cancellable: AnyCancellable) {
+            cancellable.cancel()
+            cancellables.remove(cancellable)
         }
 
         /// This function uses KVO to observe the `window` property of `view` and calls `onConnect()`
         /// and starts observing window visibility and closing.
         func monitorView(_ view: NSView) {
-            viewTracker = view.publisher(for: \.window, options: .new)
+            view.publisher(for: \.window, options: .new)
+                .compactMap({ $0 })
+                .first()
                 .sink { [weak self] newWindow in
-                    guard let self, let newWindow else { return }
+                    guard let self else { return }
                     self.window = newWindow
                     self.monitorClosing(of: newWindow)
                     self.onConnect(newWindow, self)
-
-                    self.viewTracker = nil
                 }
+                .store(bindTo: self)
         }
 
         /// This function uses notifications to track closing of our views underlying `window`
@@ -77,11 +86,10 @@ struct WindowAccessor: NSViewRepresentable {
                         self.dismantle()
                     }
                 }
-                .store(in: &cancellables)
+                .store(bindTo: self)
         }
     }
 }
-
 
 extension WindowAccessor.WindowMonitor: WindowMonitor {
 
@@ -100,11 +108,10 @@ extension WindowAccessor.WindowMonitor: WindowMonitor {
                 guard let window else { return }
                 let shouldContinue = handler(window, value)
                 if !shouldContinue {
-                    cancellable.cancel()
-                    self?.cancellables.remove(cancellable)
+                    self?.remove(cancellable: cancellable)
                 }
             })
-        cancellables.insert(cancellable)
+        store(cancellable: cancellable)
     }
 
     func observeWindowAttribute<Value>(
@@ -112,9 +119,17 @@ extension WindowAccessor.WindowMonitor: WindowMonitor {
         options: NSKeyValueObservingOptions,
         using handler: @escaping (NSWindow, Value) -> Void
     ) {
-        observeWindowAttribute(for: keyPath, options: options, using: {
-            handler($0, $1)
-            return true
-        })
+        window?.publisher(for: keyPath, options: options)
+            .sink(receiveValue: { [weak window] value in
+                guard let window else { return }
+                handler(window, value)
+            })
+            .store(bindTo: self)
+    }
+}
+
+extension AnyCancellable {
+    func store(bindTo monitor: WindowAccessor.WindowMonitor) {
+        store(in: &monitor.cancellables)
     }
 }
