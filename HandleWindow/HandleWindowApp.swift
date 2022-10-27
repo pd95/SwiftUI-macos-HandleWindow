@@ -13,12 +13,12 @@ struct HandleWindowApp: App {
 
     var body: some Scene {
         ManagedWindow("Main", id: "main") {
-            ContentView()
+            ContentView(groupID: "main")
         }
         .defaultPosition(.topLeading)
 
         ManagedWindowGroup("Secondary", id: "secondary") {
-            ContentView()
+            ContentView(groupID: "secondary")
         }
         .defaultPosition(.center)
 

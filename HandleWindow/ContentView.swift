@@ -12,10 +12,12 @@ struct ContentView: View {
     @Environment(\.window) var window
     @Environment(\.openURL) var openURL
 
+    let groupID: String
+
     var body: some View {
         let _ = print("\(Self.self): body executed for ", window.windowGroupID, window.windowGroupInstance)
         let _ = Self._printChanges()
-        VStack {
+        VStack(spacing: 20) {
             Text("it finally works!")
                 .font(.largeTitle)
 
@@ -50,10 +52,9 @@ struct ContentView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                .padding()
 
                 HStack {
-                    if window.windowGroupID == "secondary" {
+                    if groupID == "secondary" {
                         Button("Main") {
                             openURL(URL(string: "handleWindow://main")!)
                         }
@@ -69,13 +70,14 @@ struct ContentView: View {
                 }
             }
         }
-        .padding()
-        .frame(width: 400, height: 200, alignment: .center)
+        .frame(minWidth: 300)
+        .fixedSize(horizontal: true, vertical: false)
+        .padding(20)
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(groupID: "main")
     }
 }
