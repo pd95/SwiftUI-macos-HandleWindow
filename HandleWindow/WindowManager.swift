@@ -64,10 +64,22 @@ class WindowManager: ObservableObject {
     }
 
     func registerWindowGroup(id: SceneID, title: String?, contentType: Any.Type, isSingleWindow: Bool) {
-        guard scenes[id] == nil else {
-            fatalError("Registered twice a window group with ID \(id)")
-        }
         print("🟣 registering scene \(id) for \(contentType), \(type(of: contentType))")
+
+        var id = id
+        if scenes[id] != nil {
+            var counter = 0
+            print("  duplicate scene ID \(id)")
+            while scenes[id] != nil {
+                counter += 1
+                let newID = "\(id)-\(counter)"
+                print("  trying \(newID)...")
+                if scenes[newID] == nil {
+                    id = newID
+                }
+            }
+            print("  using \(id)")
+        }
 
         let commandName: String
         if let title {
