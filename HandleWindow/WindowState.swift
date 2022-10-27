@@ -24,4 +24,8 @@ struct WindowState {
     var windowGroupInstance: Int {
         Int(windowIdentifier.split(separator: "-").last.map({ String($0) }) ?? "") ?? 0
     }
+
+    var screenSize: CGSize? {
+        underlyingWindow.screen?.frame.size
+    }
 }

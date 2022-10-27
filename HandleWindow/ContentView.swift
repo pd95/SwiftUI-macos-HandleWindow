@@ -73,6 +73,7 @@ struct ContentView: View {
         .frame(minWidth: 300)
         .fixedSize(horizontal: true, vertical: false)
         .padding(20)
+        .frame(maxWidth: window.screenSize?.width, maxHeight: window.screenSize?.height)
     }
 }
 
