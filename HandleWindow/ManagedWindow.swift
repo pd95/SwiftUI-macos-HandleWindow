@@ -7,6 +7,16 @@
 
 import SwiftUI
 
+extension Bundle {
+    var displayName: String? {
+        object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+    }
+
+    var name: String? {
+        object(forInfoDictionaryKey: "CFBundleName") as? String
+    }
+}
+
 struct ManagedWindowGroup<Content: View>: Scene {
 
     @Environment(\.windowManager) private var windowManager
@@ -17,29 +27,63 @@ struct ManagedWindowGroup<Content: View>: Scene {
     fileprivate let isSingleWindow: Bool
 
     public init(_ title: String, id: String, @ViewBuilder content: () -> Content) {
-        self.init(title, id: id, isSingleWindow: false, content: content)
+        self.init(title: title, id: id, isSingleWindow: false, content: content)
     }
 
-    fileprivate init(_ title: String, id: String, isSingleWindow: Bool, @ViewBuilder content: () -> Content) {
-        self.title = title
+    public init(_ title: String, @ViewBuilder content: () -> Content) {
+        self.init(title: title, id: nil, isSingleWindow: false, content: content)
+    }
+
+    public init(id: String, @ViewBuilder content: () -> Content) {
+        self.init(title: nil, id: id, isSingleWindow: false, content: content)
+    }
+
+    public init(@ViewBuilder content: () -> Content) {
+        self.init(title: nil, id: nil, isSingleWindow: false, content: content)
+    }
+
+    fileprivate init(title: String?, id: String?, isSingleWindow: Bool, @ViewBuilder content: () -> Content) {
+        // Generate a valid ID based on the type of the content
+        let id = id ?? String(describing: Content.self)
+
+        // Generate a title based on the bundles name (=localized app name in the best case)
+        let bundle = Bundle.main
+
+        self.title = title ?? bundle.displayName ?? bundle.name ?? "(nil)"
         self.id = id
         self.isSingleWindow = isSingleWindow
         self.content = content()
         WindowManager.shared.registerWindowGroup(id: id, title: title, contentType: Content.self, isSingleWindow: isSingleWindow)
     }
 
+    private var windowContent: some View {
+        WrappedContent(sceneID: id, content: content)
+            .trackUnderlyingWindow { windowState, isConnecting in
+                print("onConnect", windowState.windowIdentifier, isConnecting)
+                if isConnecting {
+                    windowManager.registerWindow(for: id, window: windowState.underlyingWindow)
+                } else {
+                    windowManager.unregisterWindow(for: id, window: windowState.underlyingWindow)
+                }
+            }
+            .environment(\.openURL, OpenURLAction(handler: windowManager.openURLHandler))
+    }
+
+    private var windowScene: some Scene {
+        if title.isEmpty {
+            return WindowGroup(id: id) {
+                windowContent
+            }
+        } else {
+            return WindowGroup(title, id: id) {
+                windowContent
+            }
+        }
+    }
+
     var body: some Scene {
         WindowGroup(title, id: id) {
-            WrappedContent(sceneID: id, content: content)
-                .trackUnderlyingWindow { windowState, isConnecting in
-                    print("onConnect", windowState.windowIdentifier, isConnecting)
-                    if isConnecting {
-                        windowManager.registerWindow(for: id, window: windowState.underlyingWindow)
-                    } else {
-                        windowManager.unregisterWindow(for: id, window: windowState.underlyingWindow)
-                    }
-                }
-                .environment(\.openURL, OpenURLAction(handler: windowManager.openURLHandler))
+            windowContent
         }
         .handlesExternalEvents(matching: Set([id]))
         .commands {
@@ -74,7 +118,18 @@ struct ManagedWindow<Content: View>: Scene {
 
     public init(_ title: String, id: String, @ViewBuilder content: () -> Content) {
         self.id = id
-        self.content = ManagedWindowGroup(title, id: id, isSingleWindow: true, content: content)
+        self.content = ManagedWindowGroup(title: title, id: id, isSingleWindow: true, content: content)
+    }
+
+    public init(id: String, @ViewBuilder content: () -> Content) {
+        self.id = id
+        self.content = ManagedWindowGroup(title: nil, id: id, isSingleWindow: true, content: content)
+    }
+
+    public init(@ViewBuilder content: () -> Content) {
+        let content = ManagedWindowGroup(title: nil, id: nil, isSingleWindow: true, content: content)
+        self.id = content.id
+        self.content = content
     }
 
     var body: some Scene {
