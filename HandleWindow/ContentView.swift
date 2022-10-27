@@ -30,6 +30,7 @@ struct ContentView: View {
                             .bold()
                             .frame(maxWidth: .infinity, alignment: .trailing)
                         Text(window.windowIdentifier)
+                            .fixedSize()
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack {
@@ -37,6 +38,7 @@ struct ContentView: View {
                             .bold()
                             .frame(maxWidth: .infinity, alignment: .trailing)
                         Text(window.windowGroupID)
+                            .fixedSize()
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack {
@@ -44,6 +46,7 @@ struct ContentView: View {
                             .bold()
                             .frame(maxWidth: .infinity, alignment: .trailing)
                         Text(window.windowGroupInstance, format: .number)
+                            .fixedSize()
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack {
@@ -51,6 +54,7 @@ struct ContentView: View {
                             .bold()
                             .frame(maxWidth: .infinity, alignment: .trailing)
                         Text(window.underlyingWindow.frameAutosaveName)
+                            .fixedSize()
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
