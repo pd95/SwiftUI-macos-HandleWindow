@@ -112,7 +112,9 @@ class WindowManager: ObservableObject {
             fatalError("No WindowGroup registered with ID \(id)")
         }
 
-        guard let url = URL(string: "\(scheme)://\(id)") else {
+        guard let host = id.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
+              let url = URL(string: "\(scheme)://\(host)")
+        else {
             fatalError("Unable to produce a valid url with \(id) and \(scheme)")
         }
 
