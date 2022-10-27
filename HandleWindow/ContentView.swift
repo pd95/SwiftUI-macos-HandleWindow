@@ -9,8 +9,8 @@ import SwiftUI
 import Combine
 
 struct ContentView: View {
-    @Environment(\.window) var window
-    @Environment(\.openURL) var openURL
+    @Environment(\.window) private var window
+    @Environment(\.openURL) private var openURL
 
     let groupID: String
 
