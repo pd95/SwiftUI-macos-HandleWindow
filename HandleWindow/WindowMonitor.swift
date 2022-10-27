@@ -68,40 +68,6 @@ class WindowMonitor: NSObject {
             }
             .store(bindTo: self)
     }
-
-    /// Utility function to observe any `NSWindow` attribute for changes (based on KVO)
-    func observeWindowAttribute<Value>(
-        for keyPath: KeyPath<NSWindow, Value>,
-        options: NSKeyValueObservingOptions,
-        using handler: @escaping (NSWindow, Value) -> Bool
-    ) {
-        guard let window else {
-            fatalError("Cannot observe keyPath \(keyPath) without initialized window")
-        }
-        var cancellable: AnyCancellable!
-        cancellable = window.publisher(for: keyPath, options: options)
-            .sink(receiveValue: { [weak self, weak window] value in
-                guard let window else { return }
-                let shouldContinue = handler(window, value)
-                if !shouldContinue {
-                    self?.remove(cancellable: cancellable)
-                }
-            })
-        store(cancellable: cancellable)
-    }
-
-    func observeWindowAttribute<Value>(
-        for keyPath: KeyPath<NSWindow, Value>,
-        options: NSKeyValueObservingOptions,
-        using handler: @escaping (NSWindow, Value) -> Void
-    ) {
-        window?.publisher(for: keyPath, options: options)
-            .sink(receiveValue: { [weak window] value in
-                guard let window else { return }
-                handler(window, value)
-            })
-            .store(bindTo: self)
-    }
 }
 
 extension AnyCancellable {

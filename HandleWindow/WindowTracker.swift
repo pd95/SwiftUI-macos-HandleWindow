@@ -38,9 +38,14 @@ struct WindowTracker: ViewModifier {
         onConnect(state, true)
 
         // Setup visibility tracking
-        monitor.observeWindowAttribute(for: \.isVisible, options: .new, using: { _, isVisible in
-            state.isVisible = isVisible
-        })
+        window.publisher(for: \.isVisible, options: .new)
+            .filter({ $0 })
+            .first()
+            .sink(receiveValue: { isVisible in
+                print("updating visibility state", isVisible)
+                state.isVisible = isVisible
+            })
+            .store(bindTo: monitor)
     }
 
     private func windowWillClose() {
