@@ -9,34 +9,6 @@ import AppKit
 import Combine
 import SwiftUI
 
-typealias SceneID = String
-
-struct SceneConfiguration: Identifiable {
-    let id: SceneID
-    let isMain: Bool
-    let title: String?
-    let commandName: String
-    let orderBy: Int
-    var defaultPosition: UnitPoint?
-    //var defaultSize: CGSize
-    var contentType: Any.Type
-    var isSingleWindow: Bool
-
-    var keyboardShortcut: KeyboardShortcut?
-
-    var sceneFrameDescriptor: String?
-}
-
-extension SceneConfiguration: Comparable {
-    static func < (lhs: SceneConfiguration, rhs: SceneConfiguration) -> Bool {
-        lhs.orderBy < rhs.orderBy
-    }
-
-    static func == (lhs: SceneConfiguration, rhs: SceneConfiguration) -> Bool {
-        lhs.id == rhs.id
-    }
-}
-
 /// `WindowManager` is tracking and collecting information about installed scenes (`ManagedWindow` and `ManagedWindowGroup`)  and
 /// will automatically handle URL open request based on the IDs of the window scenes.
 /// It will also makes sure that single windows cannot be opened more than once. (This needs an override of the `New` command!)

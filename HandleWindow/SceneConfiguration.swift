@@ -1,0 +1,36 @@
+//
+//  SceneConfiguration.swift
+//  HandleWindow
+//
+//  Created by Philipp on 27.10.22.
+//
+
+import SwiftUI
+
+typealias SceneID = String
+
+struct SceneConfiguration: Identifiable {
+    let id: SceneID
+    let isMain: Bool
+    let title: String?
+    let commandName: String
+    let orderBy: Int
+    var defaultPosition: UnitPoint?
+    //var defaultSize: CGSize
+    var contentType: Any.Type
+    var isSingleWindow: Bool
+
+    var keyboardShortcut: KeyboardShortcut?
+
+    var sceneFrameDescriptor: String?
+}
+
+extension SceneConfiguration: Comparable {
+    static func < (lhs: SceneConfiguration, rhs: SceneConfiguration) -> Bool {
+        lhs.orderBy < rhs.orderBy
+    }
+
+    static func == (lhs: SceneConfiguration, rhs: SceneConfiguration) -> Bool {
+        lhs.id == rhs.id
+    }
+}

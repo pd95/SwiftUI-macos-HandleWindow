@@ -14,6 +14,7 @@
 		17341738285E1C6C008E0D72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17341737285E1C6C008E0D72 /* Assets.xcassets */; };
 		1734173B285E1C6C008E0D72 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1734173A285E1C6C008E0D72 /* Preview Assets.xcassets */; };
 		17341743285E1C94008E0D72 /* WindowAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17341742285E1C94008E0D72 /* WindowAccessor.swift */; };
+		17488A96290AE79200EDEFC2 /* SceneConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17488A95290AE79200EDEFC2 /* SceneConfiguration.swift */; };
 		175070D6286C8127006DB200 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175070D5286C8127006DB200 /* WindowManager.swift */; };
 		175070D8286C8153006DB200 /* ManagedWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175070D7286C8153006DB200 /* ManagedWindow.swift */; };
 		1766607A2902B12500A10D17 /* WindowMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 176660792902B11800A10D17 /* WindowMonitor.swift */; };
@@ -33,6 +34,7 @@
 		1734173A285E1C6C008E0D72 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		1734173C285E1C6C008E0D72 /* HandleWindow.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HandleWindow.entitlements; sourceTree = "<group>"; };
 		17341742285E1C94008E0D72 /* WindowAccessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowAccessor.swift; sourceTree = "<group>"; };
+		17488A95290AE79200EDEFC2 /* SceneConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneConfiguration.swift; sourceTree = "<group>"; };
 		175070D5286C8127006DB200 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		175070D7286C8153006DB200 /* ManagedWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedWindow.swift; sourceTree = "<group>"; };
 		176660792902B11800A10D17 /* WindowMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowMonitor.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 				17341735285E1C6C008E0D72 /* ContentView.swift */,
 				175070D5286C8127006DB200 /* WindowManager.swift */,
 				175070D7286C8153006DB200 /* ManagedWindow.swift */,
+				17488A95290AE79200EDEFC2 /* SceneConfiguration.swift */,
 				171DB9492860CCF000351CE3 /* SettingsView.swift */,
 				1717AA832874395200B83820 /* UserDefaults-removeSettings.swift */,
 				17341742285E1C94008E0D72 /* WindowAccessor.swift */,
@@ -171,6 +174,7 @@
 				17341743285E1C94008E0D72 /* WindowAccessor.swift in Sources */,
 				171DB94A2860CCF000351CE3 /* SettingsView.swift in Sources */,
 				17341736285E1C6C008E0D72 /* ContentView.swift in Sources */,
+				17488A96290AE79200EDEFC2 /* SceneConfiguration.swift in Sources */,
 				17341734285E1C6C008E0D72 /* HandleWindowApp.swift in Sources */,
 				1717AA842874395200B83820 /* UserDefaults-removeSettings.swift in Sources */,
 				1766607A2902B12500A10D17 /* WindowMonitor.swift in Sources */,
