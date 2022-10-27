@@ -13,16 +13,25 @@ struct SceneConfiguration: Identifiable {
     let id: SceneID
     let isMain: Bool
     let title: String?
-    let commandName: String
     let orderBy: Int
     var defaultPosition: UnitPoint?
     //var defaultSize: CGSize
     var contentType: Any.Type
     var isSingleWindow: Bool
 
-    var keyboardShortcut: KeyboardShortcut?
-
     var sceneFrameDescriptor: String?
+
+    var keyboardShortcut: KeyboardShortcut? {
+        isMain ? KeyboardShortcut("N", modifiers: .command) : nil
+    }
+
+    var commandName: String {
+        if let title {
+            return "New \(title) Window"
+        } else {
+            return "New Window"
+        }
+    }
 }
 
 extension SceneConfiguration: Comparable {

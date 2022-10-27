@@ -53,22 +53,13 @@ class WindowManager: ObservableObject {
             print("  using \(id)")
         }
 
-        let commandName: String
-        if let title {
-            commandName = "New \(title) Window"
-        } else {
-            commandName = "New Window"
-        }
-
         let sceneConfig = SceneConfiguration(
             id: id,
-            isMain: scenes.count == 0,
+            isMain: scenes.isEmpty,
             title: title,
-            commandName: commandName,
             orderBy: scenes.count,
             contentType: contentType,
             isSingleWindow: isSingleWindow,
-            keyboardShortcut: scenes.isEmpty ? KeyboardShortcut("N", modifiers: .command) : nil,
             sceneFrameDescriptor: sceneFrameFromUserDefaults(id)
         )
         scenes[id] = sceneConfig
