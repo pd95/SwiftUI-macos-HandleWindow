@@ -129,14 +129,18 @@ struct ManagedWindow<Content: View>: Scene {
 
 extension ManagedWindowGroup {
     func defaultPosition(_ position: UnitPoint) -> Self {
-        WindowManager.shared.setDefaultUnitPointPosition(position, for: id)
+        SceneConfiguration.update(sceneID: id) { scene in
+            scene.defaultPosition = position
+        }
         return self
     }
 }
 
 extension ManagedWindow {
     func defaultPosition(_ position: UnitPoint) -> Self {
-        WindowManager.shared.setDefaultUnitPointPosition(position, for: id)
+        SceneConfiguration.update(sceneID: id) { scene in
+            scene.defaultPosition = position
+        }
         return self
     }
 }

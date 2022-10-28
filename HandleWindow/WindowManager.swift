@@ -144,13 +144,6 @@ class WindowManager: ObservableObject {
         UserDefaults.standard.set(frameDescriptor, forKey: sceneFrameAutosaveNameInUserDefaults(sceneID))
     }
 
-    func setDefaultUnitPointPosition(_ position: UnitPoint, for id: SceneID) {
-        print("🟣 ", #function, "set to", position, "for", id)
-        SceneConfiguration.update(sceneID: id) { scene in
-            scene.defaultPosition = position
-        }
-    }
-
     func setInitialFrame(to window: NSWindow, for id: SceneID) {
         print("🟣 ", #function, "  window is currently at: \(window.frame)")
         // Position relative to last opened window
