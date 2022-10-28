@@ -91,7 +91,7 @@ struct ManagedWindowGroup<Content: View>: Scene {
         var body: some View {
             content
                 .onChange(of: windowState.isVisible) { isVisible in
-                    if NSApplication.shared.isActive && isVisible {
+                    if isVisible {
                         windowManager.setInitialFrame(to: windowState.underlyingWindow, for: sceneID)
                     }
                 }
@@ -134,12 +134,26 @@ extension ManagedWindowGroup {
         }
         return self
     }
+
+    func defaultSize(_ size: CGSize) -> Self {
+        SceneConfiguration.update(sceneID: id) { scene in
+            scene.defaultSize = size
+        }
+        return self
+    }
 }
 
 extension ManagedWindow {
     func defaultPosition(_ position: UnitPoint) -> Self {
         SceneConfiguration.update(sceneID: id) { scene in
             scene.defaultPosition = position
+        }
+        return self
+    }
+
+    func defaultSize(_ size: CGSize) -> Self {
+        SceneConfiguration.update(sceneID: id) { scene in
+            scene.defaultSize = size
         }
         return self
     }

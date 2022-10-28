@@ -15,7 +15,7 @@ struct SceneConfiguration: Identifiable {
     let title: String?
     let orderBy: Int
     var defaultPosition: UnitPoint?
-    //var defaultSize: CGSize
+    var defaultSize: CGSize?
     var contentType: Any.Type
     var isSingleWindow: Bool
 

@@ -21,11 +21,13 @@ struct HandleWindowApp: App {
             ContentView()
         }
         .defaultPosition(.center)
+        .defaultSize(CGSize(width: 400, height: 200))
 
         ManagedWindow(id: "tertiary") {
             ContentView()
         }
-        .defaultPosition(.center)
+        .defaultPosition(.topTrailing)
+        .defaultSize(CGSize(width: 600, height: 600))
 
         Settings {
             SettingsView()
