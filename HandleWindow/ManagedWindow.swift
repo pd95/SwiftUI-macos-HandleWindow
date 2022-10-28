@@ -7,21 +7,11 @@
 
 import SwiftUI
 
-extension Bundle {
-    var displayName: String? {
-        object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-    }
-
-    var name: String? {
-        object(forInfoDictionaryKey: "CFBundleName") as? String
-    }
-}
-
 struct ManagedWindowGroup<Content: View>: Scene {
 
     @Environment(\.windowManager) private var windowManager
 
-    private let title: String
+    private let title: String?
     fileprivate let id: SceneID
     fileprivate let content: Content
     fileprivate let isSingleWindow: Bool
@@ -46,17 +36,14 @@ struct ManagedWindowGroup<Content: View>: Scene {
         // Generate a valid ID based on the type of the content
         let id = id ?? String(describing: Content.self)
 
-        // Generate a title based on the bundles name (=localized app name in the best case)
-        let bundle = Bundle.main
-
-        self.title = title ?? bundle.displayName ?? bundle.name ?? "(nil)"
+        self.title = title
         self.id = id
         self.isSingleWindow = isSingleWindow
         self.content = content()
         WindowManager.shared.registerWindowGroup(id: id, title: title, contentType: Content.self, isSingleWindow: isSingleWindow)
     }
 
-    private var windowContent: some View {
+    private func wrappedContent() -> some View {
         WrappedContent(sceneID: id, content: content)
             .trackUnderlyingWindow { windowState, isConnecting in
                 print("onConnect", windowState.windowIdentifier, isConnecting)
@@ -69,26 +56,20 @@ struct ManagedWindowGroup<Content: View>: Scene {
             .environment(\.openURL, OpenURLAction(handler: windowManager.openURLHandler))
     }
 
-    private var windowScene: some Scene {
-        if title.isEmpty {
-            return WindowGroup(id: id) {
-                windowContent
-            }
+    private var windowGroup: some Scene {
+        if let title {
+            return WindowGroup(title, id: id, content: wrappedContent)
         } else {
-            return WindowGroup(title, id: id) {
-                windowContent
-            }
+            return WindowGroup(id: id, content: wrappedContent)
         }
     }
 
     var body: some Scene {
-        WindowGroup(title, id: id) {
-            windowContent
-        }
-        .handlesExternalEvents(matching: Set([id]))
-        .commands {
-            windowManager.commands()
-        }
+        windowGroup
+            .handlesExternalEvents(matching: Set([id]))
+            .commands {
+                windowManager.commands()
+            }
     }
 
     private struct WrappedContent<Content: View>: View {
