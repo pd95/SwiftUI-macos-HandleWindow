@@ -22,6 +22,11 @@ struct HandleWindowApp: App {
         }
         .defaultPosition(.center)
 
+        ManagedWindow(id: "tertiary") {
+            ContentView(groupID: "tertiary")
+        }
+        .defaultPosition(.center)
+
         Settings {
             SettingsView()
         }

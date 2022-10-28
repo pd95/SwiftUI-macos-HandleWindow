@@ -64,22 +64,27 @@ struct ContentView: View {
                     Button("Try close") {
                         window.close()
                     }
+
+                    Button("Dump window state") {
+                        dump(window)
+                    }
                 }
 
                 HStack {
-                    if groupID == "secondary" {
-                        Button("Main") {
-                            openURL(URL(string: "handleWindow://main")!)
-                        }
-                    } else {
-                        Button("Secondary") {
-                            openURL(URL(string: "handleWindow://secondary")!)
-                        }
+                    Button("Main") {
+                        openURL(URL(string: "handleWindow://main")!)
                     }
+                    .disabled(groupID == "main")
 
-                    Button("Dump") {
-                        dump(window)
+                    Button("Secondary") {
+                        openURL(URL(string: "handleWindow://secondary")!)
                     }
+                    .disabled(groupID == "secondary")
+
+                    Button("Tertiary") {
+                        openURL(URL(string: "handleWindow://tertiary")!)
+                    }
+                    .disabled(groupID == "tertiary")
                 }
             }
         }
