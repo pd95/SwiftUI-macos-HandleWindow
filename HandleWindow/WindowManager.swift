@@ -35,7 +35,7 @@ class WindowManager: ObservableObject {
         self.scheme = primaryURLScheme
     }
 
-    func registerWindowGroup(id: SceneID, title: String?, contentType: Any.Type, isSingleWindow: Bool) {
+    func registerWindowGroup(id: SceneID, title: String?, contentType: Any.Type, isSingleWindow: Bool) -> SceneID {
         print("🟣 registering scene \(id) for \(contentType), \(type(of: contentType))")
 
         var id = id
@@ -64,6 +64,8 @@ class WindowManager: ObservableObject {
         )
         scenes[id] = sceneConfig
         print("🟣 registered scene \(id) as \(sceneConfig)")
+
+        return id
     }
 
     func registerWindow(for sceneID: SceneID, window: NSWindow) {

@@ -33,14 +33,10 @@ struct ManagedWindowGroup<Content: View>: Scene {
     }
 
     fileprivate init(title: String?, id: String?, isSingleWindow: Bool, @ViewBuilder content: () -> Content) {
-        // Generate a valid ID based on the type of the content
-        let id = id ?? String(describing: Content.self)
-
         self.title = title
-        self.id = id
         self.isSingleWindow = isSingleWindow
         self.content = content()
-        WindowManager.shared.registerWindowGroup(id: id, title: title, contentType: Content.self, isSingleWindow: isSingleWindow)
+        self.id = WindowManager.shared.registerWindowGroup(id: id ?? String(describing: Content.self), title: title, contentType: Content.self, isSingleWindow: isSingleWindow)
     }
 
     private func wrappedContent() -> some View {
