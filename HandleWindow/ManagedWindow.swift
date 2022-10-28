@@ -7,6 +7,18 @@
 
 import SwiftUI
 
+
+private struct SceneIDEnvironmentKey: EnvironmentKey {
+    static var defaultValue: SceneID = ""
+}
+
+extension EnvironmentValues {
+    var sceneID: SceneID {
+        get { self[SceneIDEnvironmentKey.self] }
+        set { self[SceneIDEnvironmentKey.self] = newValue }
+    }
+}
+
 struct ManagedWindowGroup<Content: View>: Scene {
 
     @Environment(\.windowManager) private var windowManager
@@ -50,6 +62,7 @@ struct ManagedWindowGroup<Content: View>: Scene {
                 }
             }
             .environment(\.openURL, OpenURLAction(handler: windowManager.openURLHandler))
+            .environment(\.sceneID, id)
     }
 
     private var windowGroup: some Scene {

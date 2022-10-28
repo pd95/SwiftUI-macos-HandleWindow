@@ -9,10 +9,9 @@ import SwiftUI
 import Combine
 
 struct ContentView: View {
+    @Environment(\.sceneID) private var sceneID
     @Environment(\.window) private var window
     @Environment(\.openURL) private var openURL
-
-    let groupID: String
 
     @State private var hasChanges = false
 
@@ -25,6 +24,14 @@ struct ContentView: View {
 
             if let window {
                 VStack {
+                    HStack {
+                        Text("Scene ID:")
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                        Text(sceneID)
+                            .fixedSize()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     HStack {
                         Text("Window Identifier:")
                             .bold()
@@ -74,17 +81,17 @@ struct ContentView: View {
                     Button("Main") {
                         openURL(URL(string: "handleWindow://main")!)
                     }
-                    .disabled(groupID == "main")
+                    .disabled(sceneID == "main")
 
                     Button("Secondary") {
                         openURL(URL(string: "handleWindow://secondary")!)
                     }
-                    .disabled(groupID == "secondary")
+                    .disabled(sceneID == "secondary")
 
                     Button("Tertiary") {
                         openURL(URL(string: "handleWindow://tertiary")!)
                     }
-                    .disabled(groupID == "tertiary")
+                    .disabled(sceneID == "tertiary")
                 }
             }
         }
@@ -104,6 +111,6 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(groupID: "main")
+        ContentView()
     }
 }
