@@ -48,7 +48,7 @@ struct ManagedWindowGroup<Content: View>: Scene {
         self.title = title
         self.isSingleWindow = isSingleWindow
         self.content = content()
-        self.id = WindowManager.shared.registerWindowGroup(id: id ?? String(describing: Content.self), title: title, contentType: Content.self, isSingleWindow: isSingleWindow)
+        self.id = SceneConfiguration.register(id: id ?? String(describing: Content.self), title: title, contentType: Content.self, isSingleWindow: isSingleWindow)
     }
 
     private func wrappedContent() -> some View {

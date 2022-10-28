@@ -17,7 +17,6 @@ import SwiftUI
 class WindowManager: ObservableObject {
     static let shared = WindowManager()
 
-    private var scenes = [SceneID: SceneConfiguration]()
     private var scheme: String
     private var windows = [SceneID: [NSWindow]]()
 
@@ -35,52 +34,29 @@ class WindowManager: ObservableObject {
         self.scheme = primaryURLScheme
     }
 
-    func registerWindowGroup(id: SceneID, title: String?, contentType: Any.Type, isSingleWindow: Bool) -> SceneID {
-        print("🟣 registering scene \(id) for \(contentType), \(type(of: contentType))")
-
-        var id = id
-        if scenes[id] != nil {
-            var counter = 0
-            print("  duplicate scene ID \(id)")
-            while scenes[id] != nil {
-                counter += 1
-                let newID = "\(id)-\(counter)"
-                print("  trying \(newID)...")
-                if scenes[newID] == nil {
-                    id = newID
-                }
-            }
-            print("  using \(id)")
-        }
-
-        let sceneConfig = SceneConfiguration(
-            id: id,
-            isMain: scenes.isEmpty,
-            title: title,
-            orderBy: scenes.count,
-            contentType: contentType,
-            isSingleWindow: isSingleWindow,
-            sceneFrameDescriptor: sceneFrameFromUserDefaults(id)
-        )
-        scenes[id] = sceneConfig
-        print("🟣 registered scene \(id) as \(sceneConfig)")
-
-        return id
-    }
-
     func registerWindow(for sceneID: SceneID, window: NSWindow) {
-        guard scenes[sceneID] != nil else {
+        guard let config = SceneConfiguration.configuration(for: sceneID) else {
             fatalError("No window group with ID \(sceneID)")
         }
+
         guard windows[sceneID, default: []].contains(window) == false else {
             return
         }
+
+        // Restore frame descriptor from UserDefaults
+        if let restorableFrameDescriptor = sceneFrameFromUserDefaults(sceneID),
+           config.sceneFrameDescriptor == nil  {
+            SceneConfiguration.update(sceneID: sceneID) { scene in
+                scene.sceneFrameDescriptor = restorableFrameDescriptor
+            }
+        }
+
         print("🟣 registered new window for \(sceneID)")
         windows[sceneID, default: []].append(window)
     }
 
     func unregisterWindow(for sceneID: SceneID, window: NSWindow) {
-        guard scenes[sceneID] != nil else {
+        guard SceneConfiguration.exists(withID: sceneID) else {
             fatalError("No window group with ID \(sceneID)")
         }
         guard let index = windows[sceneID, default: []].firstIndex(of: window) else {
@@ -92,14 +68,16 @@ class WindowManager: ObservableObject {
         if windows[sceneID]?.count == 0 {
             let frameDescriptor = window.frameDescriptor
             print("🟣 saving position of last window to UserDefaults: \(frameDescriptor)")
-            scenes[sceneID]?.sceneFrameDescriptor = frameDescriptor
+            SceneConfiguration.update(sceneID: sceneID) { scene in
+                scene.sceneFrameDescriptor = frameDescriptor
+            }
             saveSceneFrameToUserDefaults(sceneID, frameDescriptor: frameDescriptor)
         }
     }
 
     func openWindow(id: SceneID) {
         print("🟣 ", #function, id)
-        guard let scene = scenes[id] else {
+        guard let scene = SceneConfiguration.configuration(for: id) else {
             fatalError("No WindowGroup registered with ID \(id)")
         }
 
@@ -122,7 +100,7 @@ class WindowManager: ObservableObject {
     func openURLHandler(_ url: URL) -> OpenURLAction.Result {
         print("🟣", #function, url)
         if url.scheme == scheme {
-            if let sceneID = url.host, let scene = scenes[sceneID] {
+            if let sceneID = url.host, let scene = SceneConfiguration.configuration(for: sceneID) {
                 if scene.isSingleWindow, let window = windows[sceneID]?.first {
                     print("🟣 ", #function, "reopening single window")
                     window.makeKeyAndOrderFront(nil)
@@ -137,7 +115,7 @@ class WindowManager: ObservableObject {
     func commands() -> some Commands {
         CommandGroup(replacing: .newItem) {
             Menu("New") {
-                ForEach(scenes.values.sorted()
+                ForEach(SceneConfiguration.allScenes.values.sorted()
                     .filter({ $0.title != nil || $0.isMain })
                 ) { scene in
                     Button(LocalizedStringKey(scene.commandName), action: { [weak self] in self?.openWindow(id: scene.id) })
@@ -168,7 +146,9 @@ class WindowManager: ObservableObject {
 
     func setDefaultUnitPointPosition(_ position: UnitPoint, for id: SceneID) {
         print("🟣 ", #function, "set to", position, "for", id)
-        scenes[id]?.defaultPosition = position
+        SceneConfiguration.update(sceneID: id) { scene in
+            scene.defaultPosition = position
+        }
     }
 
     func setInitialFrame(to window: NSWindow, for id: SceneID) {
@@ -196,12 +176,14 @@ class WindowManager: ObservableObject {
             window.setFrame(frame, display: false)
 
         } else {
+            let scene = SceneConfiguration.configuration(for: id)
+
             // Place window where last window was located on closing
-            if let savedFrameDescriptor = scenes[id]?.sceneFrameDescriptor {
+            if let savedFrameDescriptor = scene?.sceneFrameDescriptor {
                 print("  placing at last saved position: ", savedFrameDescriptor)
                 window.setFrame(from: savedFrameDescriptor)
 
-            } else if let defaultPosition = scenes[id]?.defaultPosition {
+            } else if let defaultPosition = scene?.defaultPosition {
                 // Place at default location (if window is opened for the first time)
                 print("  placing at UnitPoint position", defaultPosition)
                 let frameOrigin = frameOriginForUnitPointPosition(window, position: defaultPosition)
