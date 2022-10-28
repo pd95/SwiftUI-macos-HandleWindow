@@ -146,27 +146,17 @@ class WindowManager: ObservableObject {
 
     func setInitialFrame(to window: NSWindow, for id: SceneID) {
         print("🟣 ", #function, "  window is currently at: \(window.frame)")
+
         // Position relative to last opened window
         if let lastWindow = windows[id]?.last(where: { $0 != window }) {
-            var frame = lastWindow.frame
-            frame.origin.x += 29
-            frame.origin.y -= 29
 
-            let visibleFrame = window.screen!.visibleFrame
-            if !visibleFrame.contains(frame) {
-                print("  visible frame does not fully contain frame:", visibleFrame, frame)
-                if frame.minY < visibleFrame.minY {
-                    frame.origin.y = visibleFrame.origin.y + visibleFrame.height - frame.height
-                }
-                if frame.maxX > visibleFrame.maxX {
-                    frame.origin.x = visibleFrame.origin.x
-                }
-
-                print("  corrected frame \(frame) is valid=\(visibleFrame.contains(frame))")
-            }
-
-            print("  placing new window relative to last window", frame)
-            window.setFrame(frame, display: false)
+            let lastFrame = lastWindow.frame
+            window.setFrame(lastFrame, display: false)
+            window.setFrameTopLeftPoint(
+                window.cascadeTopLeft(from: CGPoint(x: lastFrame.minX,
+                                                    y: lastFrame.maxY))
+            )
+            print("  placed new window relative to last window at", window.frame)
 
         } else {
             let scene = SceneConfiguration.configuration(for: id)
